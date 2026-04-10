@@ -259,25 +259,31 @@ function App() {
         load(SK.force,setForceManual,{}),
       ]);
       setIsLoaded(true);
-      try {
-        setCtrlData(prev => {
-          const updated = {...prev};
-          Object.entries(ZELTY_DATA).forEach(([resto, weeks]) => {
-            Object.entries(weeks).forEach(([sem, prots]) => {
-              const key = "ctrl__" + resto + "__" + sem;
-              if (!updated[key]) updated[key] = {};
-              Object.entries(prots).forEach(([prot, vals]) => {
-                if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0};
-                updated[key][prot].portions_sig = vals.portions_sig;
-                updated[key][prot].portions_opt = vals.portions_opt;
-              });
-            });
-          });
-          return updated;
-        });
-      } catch(e) {}
     })();
   },[]);
+
+  // Sync données Zelty au chargement
+  useEffect(()=>{
+    if(!isLoaded) return;
+    setCtrlData(prev => {
+      const updated = {...prev};
+      try {
+        Object.entries(ZELTY_DATA).forEach(([resto, weeks]) => {
+          Object.entries(weeks).forEach(([sem, prots]) => {
+            const key = "ctrl__" + resto + "__" + sem;
+            if (!updated[key]) updated[key] = {};
+            Object.entries(prots).forEach(([prot, vals]) => {
+              if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0};
+              // Ne mettre à jour que si pas de données manuelles déjà saisies
+              updated[key][prot].portions_sig = vals.portions_sig;
+              updated[key][prot].portions_opt = vals.portions_opt;
+            });
+          });
+        });
+      } catch(e) { console.error(e); }
+      return updated;
+    });
+  },[isLoaded]);
 
   const persist=useCallback(async(key,val)=>{
     try{ await window.storage.set(key,JSON.stringify(val)); setSaved(true); setTimeout(()=>setSaved(false),1500); }
