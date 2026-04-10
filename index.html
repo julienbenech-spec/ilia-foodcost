@@ -259,7 +259,6 @@ function App() {
         load(SK.force,setForceManual,{}),
       ]);
       setIsLoaded(true);
-      // Sync Zelty → ctrlData
       try {
         setCtrlData(prev => {
           const updated = {...prev};
@@ -276,7 +275,7 @@ function App() {
           });
           return updated;
         });
-      } catch(e) { console.error("Zelty sync error:", e); }
+      } catch(e) {}
     })();
   },[]);
 
