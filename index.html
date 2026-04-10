@@ -25,6 +25,10 @@ window.storage = {
   delete: async (key) => { localStorage.removeItem(key); },
 };
 
+
+
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const RESTAURANTS = ["Washington","Mathurins","Casanova","Vernier","Riviere"];
 const FOURNISSEURS = ["Cercle Vert","Halles Prestige","Chirag","Sablière","J'Océane","Prodorient","Brand Décision"];
 const MOIS = ["Janvier 2026","Février 2026","Mars 2026"];
 const WEEKS = ["S09","S10","S11","S12","S13","S14","S15","S16","S17","S18"];
@@ -262,7 +266,6 @@ function App() {
     })();
   },[]);
 
-  // Sync données Zelty au chargement
   useEffect(()=>{
     if(!isLoaded) return;
     setCtrlData(prev => {
@@ -274,13 +277,12 @@ function App() {
             if (!updated[key]) updated[key] = {};
             Object.entries(prots).forEach(([prot, vals]) => {
               if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0};
-              // Ne mettre à jour que si pas de données manuelles déjà saisies
               updated[key][prot].portions_sig = vals.portions_sig;
               updated[key][prot].portions_opt = vals.portions_opt;
             });
           });
         });
-      } catch(e) { console.error(e); }
+      } catch(e) {}
       return updated;
     });
   },[isLoaded]);
