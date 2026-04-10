@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ILIA · Food Cost</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #fff; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+const ZELTY_DATA = {"Washington": {"S06": {"Saumon": {"portions_sig": 76, "portions_opt": 131, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 89, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 90, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 203, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 73, "portions_opt": 127, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 86, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 57, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 87, "portions_opt": 228, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 85, "portions_opt": 123, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 86, "portions_opt": 61, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 66, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 193, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 61, "portions_opt": 110, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 92, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 67, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 84, "portions_opt": 194, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 62, "portions_opt": 113, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 58, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 69, "portions_opt": 201, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 73, "portions_opt": 135, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 93, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 61, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 216, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 60, "portions_opt": 142, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 103, "portions_opt": 78, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 72, "portions_opt": 167, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 51, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 57, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 65, "portions_opt": 244, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 68, "portions_opt": 142, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 84, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 226, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 42, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 78, "portions_opt": 58, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 46, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 190, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Mathurins": {"S06": {"Saumon": {"portions_sig": 47, "portions_opt": 105, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 68, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 50, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 140, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 62, "portions_opt": 93, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 78, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 137, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 57, "portions_opt": 84, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 72, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 148, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 60, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 42, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 67, "portions_opt": 112, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 54, "portions_opt": 87, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 101, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 171, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 62, "portions_opt": 92, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 82, "portions_opt": 57, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 64, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 162, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 46, "portions_opt": 87, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 112, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 22, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 134, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 54, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 107, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 69, "portions_opt": 86, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 72, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 51, "portions_opt": 85, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 81, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 37, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 156, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Riviere": {"S06": {"Saumon": {"portions_sig": 52, "portions_opt": 119, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 80, "portions_opt": 46, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 51, "portions_opt": 68, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 75, "portions_opt": 159, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 64, "portions_opt": 111, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 105, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 31, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 94, "portions_opt": 164, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 70, "portions_opt": 117, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 106, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 47, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 70, "portions_opt": 124, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 58, "portions_opt": 126, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 105, "portions_opt": 44, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 91, "portions_opt": 144, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 79, "portions_opt": 143, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 59, "portions_opt": 81, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 82, "portions_opt": 176, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 67, "portions_opt": 124, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 43, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 40, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 173, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 86, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 101, "portions_opt": 52, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 60, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 95, "portions_opt": 166, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 67, "portions_opt": 132, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 127, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 28, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 181, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 67, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 119, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 63, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 88, "portions_opt": 161, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 41, "portions_opt": 116, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 123, "portions_opt": 64, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 67, "portions_opt": 160, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Casanova": {"S06": {"Saumon": {"portions_sig": 76, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 43, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 206, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 57, "portions_opt": 109, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 81, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 42, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 102, "portions_opt": 207, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 75, "portions_opt": 121, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 94, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 95, "portions_opt": 209, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 60, "portions_opt": 101, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 90, "portions_opt": 35, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 102, "portions_opt": 193, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 68, "portions_opt": 122, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 89, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 80, "portions_opt": 192, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 65, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 92, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 75, "portions_opt": 198, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 69, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 74, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 105, "portions_opt": 221, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 76, "portions_opt": 125, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 94, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 116, "portions_opt": 192, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 68, "portions_opt": 146, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 72, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 55, "portions_opt": 82, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 225, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 34, "portions_opt": 93, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 89, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 33, "portions_opt": 48, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 58, "portions_opt": 170, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Vernier": {"S06": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 21, "portions_opt": 48, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 34, "portions_opt": 12, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 9, "portions_opt": 17, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 31, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 66, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 30, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 125, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 72, "portions_opt": 149, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 63, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 70, "portions_opt": 100, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 82, "portions_opt": 207, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 77, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 124, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 66, "portions_opt": 109, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 85, "portions_opt": 205, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 77, "portions_opt": 153, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 135, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 71, "portions_opt": 95, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 93, "portions_opt": 247, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 103, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 115, "portions_opt": 80, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 67, "portions_opt": 94, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 250, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 88, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 58, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 237, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 73, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 145, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 62, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 104, "portions_opt": 258, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 69, "portions_opt": 131, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 99, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 59, "portions_opt": 88, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 178, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}};
+
+window.storage = {
+  get: async (key) => { const v = localStorage.getItem(key); return v ? {value: v} : null; },
+  set: async (key, val) => { localStorage.setItem(key, val); },
+  delete: async (key) => { localStorage.removeItem(key); },
+};
+
+const FOURNISSEURS = ["Cercle Vert", "Halles Prestige", "Chirag", "Sablière", "J'Océane", "Prodorient", "Brand Décision"];
+const RESTAURANTS = ["Washington", "Mathurins", "Casanova", "Vernier", "Riviere"];
+const MOIS = ["Janvier 2026", "Février 2026", "Mars 2026"];
+const COLORS = {
+  "Cercle Vert": { bg: "#e8f5e9", accent: "#2e7d32", light: "#c8e6c9", text: "#1b5e20" },
+  "Halles Prestige": { bg: "#e3f2fd", accent: "#1565c0", light: "#bbdefb", text: "#0d47a1" },
+  "Chirag": { bg: "#fce4ec", accent: "#c62828", light: "#ffcdd2", text: "#b71c1c" },
+  "Sablière": { bg: "#fff3e0", accent: "#e65100", light: "#ffe0b2", text: "#bf360c" },
+  "J'Océane": { bg: "#e0f7fa", accent: "#00695c", light: "#b2ebf2", text: "#004d40" },
+  "Prodorient": { bg: "#f3e5f5", accent: "#6a1b9a", light: "#e1bee7", text: "#4a148c" },
+  "Brand Décision": { bg: "#f1f8e9", accent: "#558b2f", light: "#dcedc8", text: "#33691e" },
+};
+const RC = ["#6366f1","#0891b2","#059669","#d97706","#dc2626"];
+
+const PROTEINES = [
+  { name: "Saumon",  grammage: 100, coeff: 0.667, emoji: "🐟" },
+  { name: "Thon",   grammage: 80,  coeff: 0.833, emoji: "🐠" },
+  { name: "Bœuf",   grammage: 70,  coeff: 0.550, emoji: "🥩" },
+  { name: "Poulet", grammage: 130, coeff: 0.625, emoji: "🍗" },
+];
+
+const fmt  = n => new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",minimumFractionDigits:2}).format(n);
+const fmtK = n => new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
+const fmtN = (n,d=3) => n==null||isNaN(n)?"—":Number(n).toFixed(d);
+const pct  = (a,b) => b>0?((a/b)*100).toFixed(1)+"%":"—";
+
+const ecartColor = pct => {
+  const v = Math.abs(pct);
+  if (v <= 5)  return { bg:"#e8f5e9", text:"#2e7d32", label:"✓" };
+  if (v <= 10) return { bg:"#fff8e1", text:"#f57f17", label:"⚠" };
+  return           { bg:"#ffebee", text:"#c62828", label:"✗" };
+};
+
+const defaultProtData = () => PROTEINES.reduce((acc,p)=>{
+  acc[p.name] = { portions_sig:0, portions_opt:0, inv_debut:0, inv_fin:0, cmd_brut:0 };
+  return acc;
+},{});
+
+// ── INIT DATA (achats) ──────────────────────────────────────────────────────
+const INIT = {
+  "Cercle Vert__Washington__Janvier 2026": [
+    {ingredient:"Riz rouge",montant:828.75,qty:195,unit:"kg"},{ingredient:"Trio de quinoa",montant:376.00,qty:80,unit:"kg"},
+    {ingredient:"Huile olive 20%",montant:297.00,qty:15,unit:"bidon 5L"},{ingredient:"Fregula sarda",montant:252.00,qty:40,unit:"kg"},
+    {ingredient:"Lentilles sans sel",montant:171.00,qty:6,unit:"sac 10kg"},{ingredient:"Mayonnaise",montant:105.70,qty:7,unit:"seau 5L"},
+    {ingredient:"Chocolat drops 44%",montant:84.00,qty:2,unit:"sac 5kg"},{ingredient:"Miel fleurs",montant:60.00,qty:12,unit:"kg"},
+    {ingredient:"Huile tournesol",montant:50.40,qty:3,unit:"bidon 10L"},{ingredient:"Velouté potiron",montant:45.60,qty:24,unit:"brick 1L"},
+    {ingredient:"Bouillon boeuf",montant:43.00,qty:2,unit:"boîte 1.6kg"},{ingredient:"Vanille Tahiti",montant:41.50,qty:1,unit:"flacon 500g"},
+    {ingredient:"Ail pulpe",montant:36.00,qty:9,unit:"kg"},{ingredient:"Lait de coco",montant:32.50,qty:10,unit:"brick 1L"},
+    {ingredient:"KUB OR",montant:30.40,qty:2,unit:"boîte 1.42kg"},{ingredient:"Sucre semoule",montant:30.00,qty:30,unit:"kg"},
+    {ingredient:"Chapelure panko",montant:28.50,qty:5,unit:"kg"},{ingredient:"Boulgour",montant:23.50,qty:2,unit:"sac 5kg"},
+    {ingredient:"Paprika fumé",montant:23.20,qty:4,unit:"kg"},{ingredient:"Graines de lin",montant:23.00,qty:2,unit:"kg"},
+    {ingredient:"Sucre vergeoise",montant:21.15,qty:9,unit:"sachet 500g"},{ingredient:"Crème balsamique",montant:19.96,qty:4,unit:"flacon 500ml"},
+    {ingredient:"Sauce sriracha",montant:18.60,qty:2,unit:"bouteille 1L"},{ingredient:"Sel gros",montant:17.85,qty:3,unit:"seau 5kg"},
+    {ingredient:"Cacao poudre",montant:17.65,qty:1,unit:"kg"},{ingredient:"Vinaigre de vin",montant:15.76,qty:2,unit:"bidon 10L"},
+    {ingredient:"Sel de mer fin",montant:15.30,qty:3,unit:"seau 5kg"},{ingredient:"Raz el hanout",montant:14.00,qty:4,unit:"pot 400g"},
+    {ingredient:"Marrons entiers",montant:11.80,qty:2,unit:"bocal 720ml"},{ingredient:"Fond blanc volaille",montant:10.10,qty:1,unit:"boîte 675g"},
+    {ingredient:"Tomate pelée",montant:9.98,qty:2,unit:"boîte 5/1"},{ingredient:"Sucre cassonade",montant:9.60,qty:4,unit:"kg"},
+    {ingredient:"Purée mangue",montant:7.90,qty:1,unit:"kg"},{ingredient:"Cerneaux noix",montant:6.50,qty:1,unit:"kg"},
+    {ingredient:"Tomate concentrée",montant:5.98,qty:2,unit:"boîte 4/4"},{ingredient:"Harissa",montant:5.80,qty:9,unit:"boîte 1/6"},
+    {ingredient:"Curry moulu",montant:5.60,qty:1,unit:"kg"},{ingredient:"Vinaigre blanc",montant:4.95,qty:1,unit:"bidon 10L"}
+  ],
+  "Cercle Vert__Washington__Février 2026": [
+    {ingredient:"Bouillon boeuf",montant:21.50,qty:1,unit:"boîte 1.6kg"},{ingredient:"Chapelure panko",montant:11.40,qty:2,unit:"kg"},
+    {ingredient:"Fregula sarda",montant:64.50,qty:10,unit:"kg"},{ingredient:"Harissa",montant:0.64,qty:1,unit:"boîte 1/6"},
+    {ingredient:"Huile olive 20%",montant:79.20,qty:4,unit:"bidon 5L"},{ingredient:"Huile tournesol",montant:16.80,qty:1,unit:"bidon 10L"},
+    {ingredient:"KUB OR",montant:30.40,qty:2,unit:"boîte 1.42kg"},{ingredient:"Lait de coco",montant:7.30,qty:2,unit:"brick 1L"},
+    {ingredient:"Lentilles sans sel",montant:57.00,qty:2,unit:"sac 10kg"},{ingredient:"Mayonnaise",montant:45.30,qty:3,unit:"seau 5L"},
+    {ingredient:"Miel fleurs",montant:25.00,qty:5,unit:"kg"},{ingredient:"Olives kalamata",montant:38.10,qty:3,unit:"sac 3.4kg"},
+    {ingredient:"Piment jalapeños",montant:8.85,qty:3,unit:"boîte 4/4"},{ingredient:"Riz rouge",montant:255.00,qty:60,unit:"kg"},
+    {ingredient:"Sauce soja sucrée",montant:20.40,qty:3,unit:"bouteille 975ml"},{ingredient:"Tomate concentrée",montant:5.98,qty:2,unit:"boîte 4/4"},
+    {ingredient:"Trio de quinoa",montant:141.00,qty:30,unit:"kg"},{ingredient:"Ail pulpe",montant:4.00,qty:1,unit:"kg"},
+    {ingredient:"Chapelure panko",montant:5.70,qty:1,unit:"kg"},{ingredient:"Fregula sarda",montant:64.50,qty:10,unit:"kg"},
+    {ingredient:"Sel gros",montant:11.90,qty:2,unit:"seau 5kg"},{ingredient:"Harissa",montant:1.29,qty:2,unit:"boîte 1/6"},
+    {ingredient:"Huile olive 20%",montant:99.00,qty:5,unit:"bidon 5L"},{ingredient:"Huile tournesol",montant:16.80,qty:1,unit:"bidon 10L"},
+    {ingredient:"KUB OR",montant:15.20,qty:1,unit:"boîte 1.42kg"},{ingredient:"Lait de coco",montant:10.95,qty:3,unit:"brick 1L"},
+    {ingredient:"Lentilles sans sel",montant:57.00,qty:2,unit:"sac 10kg"},{ingredient:"Mayonnaise",montant:45.30,qty:3,unit:"seau 5L"},
+    {ingredient:"Miel fleurs",montant:15.00,qty:3,unit:"kg"},{ingredient:"Olives kalamata",montant:12.70,qty:1,unit:"sac 3.4kg"},
+    {ingredient:"Paprika fumé",montant:5.80,qty:1,unit:"kg"},{ingredient:"Piment jalapeños",montant:5.90,qty:2,unit:"boîte 4/4"},
+    {ingredient:"Purée mangue",montant:23.70,qty:3,unit:"kg"},{ingredient:"Raz el hanout",montant:3.50,qty:1,unit:"pot 400g"},
+    {ingredient:"Riz rouge",montant:191.25,qty:45,unit:"kg"},{ingredient:"Sel de mer fin",montant:5.10,qty:1,unit:"seau 5kg"},
+    {ingredient:"Sucre cassonade",montant:2.40,qty:1,unit:"kg"},{ingredient:"Trio de quinoa",montant:94.00,qty:20,unit:"kg"},
+    {ingredient:"Ail pulpe",montant:8.00,qty:2,unit:"kg"},{ingredient:"Chapelure panko",montant:5.70,qty:1,unit:"kg"},
+    {ingredient:"Crème balsamique",montant:4.99,qty:1,unit:"flacon 500ml"},{ingredient:"Chocolat drops 44%",montant:42.00,qty:1,unit:"sac 5kg"},
+    {ingredient:"Fregula sarda",montant:64.50,qty:10,unit:"kg"},{ingredient:"Graines de chia",montant:20.40,qty:2,unit:"kg"},
+    {ingredient:"Graines de lin",montant:34.50,qty:3,unit:"kg"},{ingredient:"Harissa",montant:0.64,qty:1,unit:"boîte 1/6"},
+    {ingredient:"Huile olive 20%",montant:99.00,qty:5,unit:"bidon 5L"},{ingredient:"KUB OR",montant:15.20,qty:1,unit:"boîte 1.42kg"},
+    {ingredient:"Lait de coco",montant:10.95,qty:3,unit:"brick 1L"},{ingredient:"Mayonnaise",montant:30.20,qty:2,unit:"seau 5L"},
+    {ingredient:"Miel fleurs",montant:15.00,qty:3,unit:"kg"},{ingredient:"Paprika fumé",montant:11.60,qty:2,unit:"kg"},
+    {ingredient:"Raz el hanout",montant:3.50,qty:1,unit:"pot 400g"},{ingredient:"Riz rouge",montant:191.25,qty:45,unit:"kg"},
+    {ingredient:"Sauce soja sucrée",montant:20.40,qty:3,unit:"bouteille 975ml"},{ingredient:"Sucre semoule",montant:9.00,qty:10,unit:"kg"},
+    {ingredient:"Tomate concentrée",montant:2.99,qty:1,unit:"boîte 4/4"},{ingredient:"Tomate pelée",montant:4.99,qty:1,unit:"boîte 5/1"},
+    {ingredient:"Trio de quinoa",montant:94.00,qty:20,unit:"kg"},{ingredient:"Velouté potiron",montant:11.40,qty:6,unit:"brick 1L"},
+    {ingredient:"Vinaigre blanc",montant:4.95,qty:1,unit:"bidon 10L"},{ingredient:"Vinaigre de vin",montant:7.88,qty:1,unit:"bidon 10L"},
+  ],
+};
+
+function App() {
+  const [data, setData]           = useState(INIT);
+  const [ctrlData, setCtrlData]   = useState({});
+  const [mode, setMode]           = useState("achats");
+  const [tab, setTab]             = useState("Cercle Vert");
+  const [view, setView]           = useState("ingredients");
+  const [saved, setSaved]         = useState(false);
+  const [moisFilter, setMoisFilter] = useState("Tous");
+  const [semaineCtrl, setSemaineCtrl] = useState("S13");
+  const [restCtrl, setRestCtrl]   = useState("Washington");
+  const [ctrlViewMode, setCtrlViewMode] = useState("detail"); // "detail" | "comparaison"
+  const [form, setForm] = useState({
+    fournisseur:"Cercle Vert", restaurant:"Washington", mois:"Janvier 2026",
+    ingredient:"", montant:"", qty:"", unit:""
+  });
+
+  useEffect(()=>{
+    (async()=>{
+      try{ const r=await window.storage.get("ilia_fc_v8"); if(r) setData(JSON.parse(r.value)); }catch{}
+      try{ const r=await window.storage.get("ilia_ctrl_v1"); if(r) setCtrlData(JSON.parse(r.value)); }catch{}
+      // Sync Zelty → ctrlData (préserve les saisies manuelles)
+      try {
+        const zeltyKeys = Object.entries(ZELTY_DATA).flatMap(([resto, weeks]) =>
+          Object.entries(weeks).map(([sem, prots]) => ({
+            key: "ctrl__" + resto + "__" + sem,
+            prots
+          }))
+        );
+        setCtrlData(prev => {
+          const updated = {...prev};
+          zeltyKeys.forEach(({key, prots}) => {
+            if (!updated[key]) updated[key] = {};
+            Object.entries(prots).forEach(([prot, vals]) => {
+              if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
+              updated[key][prot].portions_sig = vals.portions_sig;
+              updated[key][prot].portions_opt = vals.portions_opt;
+            });
+          });
+          return updated;
+        });
+      } catch(e) {}
+    })();
+  },[]);
+
+  const save = useCallback(async d=>{
+    setData(d);
+    try{ await window.storage.set("ilia_fc_v8",JSON.stringify(d)); setSaved(true); setTimeout(()=>setSaved(false),1500); }catch{}
+  },[]);
+
+  const saveCtrl = useCallback(async d=>{
+    setCtrlData(d);
+    try{ await window.storage.set("ilia_ctrl_v1",JSON.stringify(d)); setSaved(true); setTimeout(()=>setSaved(false),1500); }catch{}
+  },[]);
+
+  // ── Achats helpers ──
+  const addLine=()=>{
+    if(!form.ingredient.trim()||!form.montant) return;
+    const key=`${form.fournisseur}__${form.restaurant}__${form.mois}`;
+    save({...data,[key]:[...(data[key]||[]),{ingredient:form.ingredient.trim(),montant:parseFloat(form.montant),qty:form.qty?parseFloat(form.qty):0,unit:form.unit||""}]});
+    setForm(f=>({...f,ingredient:"",montant:"",qty:"",unit:""}));
+  };
+  const delLine=(key,i)=>{ const a=[...(data[key]||[])]; a.splice(i,1); save({...data,[key]:a}); };
+  const filteredEntries=fournisseur=>Object.entries(data).filter(([k])=>{
+    const[f,,m]=k.split("__"); return f===fournisseur&&(moisFilter==="Tous"||m===moisFilter);
+  });
+  const rows=fournisseur=>{
+    const byI={},byR={};
+    filteredEntries(fournisseur).forEach(([k,lines])=>{
+      const[,r]=k.split("__");
+      lines.forEach(l=>{
+        if(!byI[l.ingredient]) byI[l.ingredient]={montant:0,qty:0,unit:l.unit||""};
+        byI[l.ingredient].montant+=l.montant; byI[l.ingredient].qty+=(l.qty||0);
+        byI[l.ingredient].unit=l.unit||byI[l.ingredient].unit;
+        byR[r]=(byR[r]||0)+l.montant;
+      });
+    });
+    const total=Object.values(byI).reduce((a,b)=>a+b.montant,0);
+    return{ings:Object.entries(byI).sort((a,b)=>b[1].montant-a[1].montant),rests:Object.entries(byR).sort((a,b)=>b[1]-a[1]),total};
+  };
+  const globalTotal=Object.entries(data).filter(([k])=>moisFilter==="Tous"||k.split("__")[2]===moisFilter).reduce((s,[,a])=>s+a.reduce((x,l)=>x+l.montant,0),0);
+  const c=COLORS[tab]||COLORS["Cercle Vert"];
+  const{ings,rests,total}=rows(tab);
+  const coverage=RESTAURANTS.flatMap(r=>MOIS.map(m=>({r,m,has:!!data[`${tab}__${r}__${m}`]})));
+
+  // ── Contrôle helpers ──
+  const ctrlKey=(rest,sem)=>`ctrl__${rest}__${sem}`;
+  const getCtrlData=(rest,sem)=>ctrlData[ctrlKey(rest,sem)]||defaultProtData();
+  const updateCtrlField=(rest,sem,prot,field,val)=>{
+    const key=ctrlKey(rest,sem);
+    const cur=getCtrlData(rest,sem);
+    const updated={...ctrlData,[key]:{...cur,[prot]:{...cur[prot],[field]:parseFloat(val)||0}}};
+    saveCtrl(updated);
+  };
+  const calcProt=(d,p)=>{
+    const total_p=(d.portions_sig||0)+(d.portions_opt||0);
+    const theo_net=(total_p*p.grammage)/1000;
+    const theo_brut=theo_net/p.coeff;
+    const cmd_net=(d.cmd_brut||0)*p.coeff;
+    const conso_reelle=(d.inv_debut||0)+cmd_net-(d.inv_fin||0);
+    const ecart_kg=conso_reelle-theo_net;
+    const ecart_pct=theo_net>0?(ecart_kg/theo_net)*100:0;
+    return{total_p,theo_net,theo_brut,cmd_net,conso_reelle,ecart_kg,ecart_pct};
+  };
+
+  const Btn=({v,label})=>(
+    <button onClick={()=>setView(v)} style={{fontSize:12,padding:"5px 13px",borderRadius:20,border:"1px solid",borderColor:view===v?c.accent:"#e0e0e0",background:view===v?c.accent:"#fff",color:view===v?"#fff":"#666",cursor:"pointer",fontWeight:view===v?600:400}}>{label}</button>
+  );
+
+  // ── Contrôle view ──
+  const ControleView=()=>{
+    const weeks=["S09","S10","S11","S12","S13","S14","S15","S16","S17","S18"];
+    const protAccent="#1a237e";
+
+    if(ctrlViewMode==="comparaison"){
+      return(
+        <div>
+          <div style={{display:"flex",gap:8,marginBottom:16,alignItems:"center",flexWrap:"wrap"}}>
+            <div style={{fontSize:11,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em"}}>Semaine</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {weeks.map(w=>(
+                <button key={w} onClick={()=>setSemaineCtrl(w)} style={{fontSize:12,padding:"4px 10px",borderRadius:16,border:"1px solid",borderColor:semaineCtrl===w?"#1a237e":"#e0e0e0",background:semaineCtrl===w?"#1a237e":"#fff",color:semaineCtrl===w?"#fff":"#555",cursor:"pointer",fontWeight:semaineCtrl===w?700:400}}>{w}</button>
+              ))}
+              <input value={semaineCtrl} onChange={e=>setSemaineCtrl(e.target.value)} placeholder="S00" style={{width:50,padding:"4px 8px",borderRadius:16,border:"1px solid #ddd",fontSize:12,textAlign:"center"}}/>
+            </div>
+          </div>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <thead>
+                <tr style={{background:"#f5f5f5"}}>
+                  <th style={{padding:"8px 10px",textAlign:"left",fontWeight:600,fontSize:11,color:"#555",borderBottom:"2px solid #e0e0e0"}}>Restaurant</th>
+                  {PROTEINES.map(p=>(
+                    <th key={p.name} colSpan={2} style={{padding:"8px 10px",textAlign:"center",fontWeight:600,fontSize:11,color:"#555",borderBottom:"2px solid #e0e0e0",borderLeft:"1px solid #e0e0e0"}}>{p.emoji} {p.name}</th>
+                  ))}
+                </tr>
+                <tr style={{background:"#fafafa"}}>
+                  <th style={{padding:"5px 10px",borderBottom:"1px solid #eee"}}></th>
+                  {PROTEINES.map(p=>(
+                    <>
+                      <th key={p.name+"kg"} style={{padding:"5px 8px",textAlign:"center",fontSize:10,color:"#888",borderBottom:"1px solid #eee",borderLeft:"1px solid #eee"}}>Écart kg</th>
+                      <th key={p.name+"pct"} style={{padding:"5px 8px",textAlign:"center",fontSize:10,color:"#888",borderBottom:"1px solid #eee"}}>Écart %</th>
+                    </>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {RESTAURANTS.map(rest=>{
+                  const d=getCtrlData(rest,semaineCtrl);
+                  return(
+                    <tr key={rest} style={{borderBottom:"1px solid #f0f0f0"}}>
+                      <td style={{padding:"8px 10px",fontWeight:600,fontSize:12}}>{rest}</td>
+                      {PROTEINES.map(p=>{
+                        const pd=d[p.name]||{};
+                        const c2=calcProt(pd,p);
+                        const hasData=pd.portions_sig>0||pd.portions_opt>0;
+                        if(!hasData) return(
+                          <><td key={p.name+"kg"} colSpan={2} style={{padding:"8px",textAlign:"center",color:"#ccc",fontSize:11,borderLeft:"1px solid #eee"}}>—</td></>
+                        );
+                        const col=ecartColor(c2.ecart_pct);
+                        return(
+                          <>
+                            <td key={p.name+"kg"} style={{padding:"8px",textAlign:"center",fontSize:12,fontWeight:600,borderLeft:"1px solid #eee",color:col.text}}>{c2.ecart_kg>=0?"+":""}{fmtN(c2.ecart_kg,2)}</td>
+                            <td key={p.name+"pct"} style={{padding:"8px",textAlign:"center"}}>
+                              <span style={{background:col.bg,color:col.text,padding:"2px 8px",borderRadius:10,fontSize:11,fontWeight:700}}>{col.label} {c2.ecart_kg>=0?"+":""}{fmtN(c2.ecart_pct,1)}%</span>
+                            </td>
+                          </>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    // Detail view
+    const d=getCtrlData(restCtrl,semaineCtrl);
+    const totals=PROTEINES.map(p=>({p,d:d[p.name]||{},c:calcProt(d[p.name]||{},p)}));
+    const totalTheo=totals.reduce((s,t)=>s+t.c.theo_net,0);
+    const totalReel=totals.reduce((s,t)=>s+t.c.conso_reelle,0);
+    const totalEcart=totalReel-totalTheo;
+    const totalEcartPct=totalTheo>0?(totalEcart/totalTheo)*100:0;
+    const globalCol=ecartColor(totalEcartPct);
+
+    return(
+      <div>
+        {/* Selectors */}
+        <div style={{display:"flex",gap:16,marginBottom:16,flexWrap:"wrap",alignItems:"flex-end"}}>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Semaine</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {weeks.map(w=>(
+                <button key={w} onClick={()=>setSemaineCtrl(w)} style={{fontSize:12,padding:"4px 10px",borderRadius:16,border:"1px solid",borderColor:semaineCtrl===w?"#1a237e":"#e0e0e0",background:semaineCtrl===w?"#1a237e":"#fff",color:semaineCtrl===w?"#fff":"#555",cursor:"pointer",fontWeight:semaineCtrl===w?700:400}}>{w}</button>
+              ))}
+              <input value={semaineCtrl} onChange={e=>setSemaineCtrl(e.target.value)} placeholder="S00" style={{width:50,padding:"4px 8px",borderRadius:16,border:"1px solid #ddd",fontSize:12,textAlign:"center"}}/>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Restaurant</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {RESTAURANTS.map(r=>(
+                <button key={r} onClick={()=>setRestCtrl(r)} style={{fontSize:12,padding:"4px 12px",borderRadius:16,border:"1px solid",borderColor:restCtrl===r?"#1a237e":"#e0e0e0",background:restCtrl===r?"#1a237e":"#fff",color:restCtrl===r?"#fff":"#555",cursor:"pointer",fontWeight:restCtrl===r?700:400}}>{r}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* KPI cards */}
+        <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
+          {[
+            ["Théo net","#1a237e",fmtN(totalTheo,2)+" kg","consommation attendue"],
+            ["Commandé net","#00695c",fmtN(totals.reduce((s,t)=>s+t.c.cmd_net,0),2)+" kg","après rendement"],
+            ["Conso réelle","#e65100",fmtN(totalReel,2)+" kg","inv. début + achats - inv. fin"],
+            ["Écart total",globalCol.text,(totalEcart>=0?"+":"")+fmtN(totalEcart,2)+" kg · "+(totalEcartPct>=0?"+":"")+fmtN(totalEcartPct,1)+"%",globalCol.label+" vs théorique"],
+          ].map(([lbl,accent,val,sub])=>(
+            <div key={lbl} style={{flex:1,minWidth:130,background:"#f8f8f6",borderRadius:8,padding:"12px 14px",borderLeft:`3px solid ${accent}`}}>
+              <div style={{fontSize:10,color:"#888",fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:3}}>{lbl}</div>
+              <div style={{fontSize:16,fontWeight:700,color:accent}}>{val}</div>
+              <div style={{fontSize:10,color:"#aaa",marginTop:2}}>{sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+            <thead>
+              <tr style={{background:"#1a237e"}}>
+                {["Protéine","Portions Sig.","Portions Opt.","Total","Gram. net (g)","Théo brut (kg)","Théo net (kg)","Cmd brut (kg)","Coeff","Cmd net (kg)","Inv. début (kg)","Inv. fin (kg)","Conso réelle (kg)","Écart (kg)","Écart %"].map(h=>(
+                  <th key={h} style={{padding:"8px 10px",color:"#fff",fontWeight:600,fontSize:10,textAlign:"center",whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PROTEINES.map((p,i)=>{
+                const pd=d[p.name]||{};
+                const c2=calcProt(pd,p);
+                const col=ecartColor(c2.ecart_pct);
+                const inp=(field,val,w=60)=>(
+                  <input type="number" min="0" step="0.1" value={val||""} placeholder="0"
+                    onChange={e=>updateCtrlField(restCtrl,semaineCtrl,p.name,field,e.target.value)}
+                    style={{width:w,padding:"4px 6px",border:"1px solid #ddd",borderRadius:4,fontSize:11,textAlign:"center",background:"#fffde7"}}/>
+                );
+                return(
+                  <tr key={p.name} style={{background:i%2===0?"#fafafa":"#fff",borderBottom:"1px solid #efefef"}}>
+                    <td style={{padding:"8px 10px",fontWeight:700}}>{p.emoji} {p.name}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center"}}>{inp("portions_sig",pd.portions_sig,65)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center"}}>{inp("portions_opt",pd.portions_opt,65)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",fontWeight:700,color:protAccent}}>{c2.total_p||"—"}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",color:"#888"}}>{p.grammage}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",color:"#666"}}>{fmtN(c2.theo_brut,3)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",fontWeight:600,color:protAccent}}>{fmtN(c2.theo_net,3)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center"}}>{inp("cmd_brut",pd.cmd_brut,70)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",color:"#888"}}>{p.coeff}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",color:"#666"}}>{fmtN(c2.cmd_net,3)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center"}}>{inp("inv_debut",pd.inv_debut,70)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center"}}>{inp("inv_fin",pd.inv_fin,70)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",fontWeight:700,color:"#e65100"}}>{fmtN(c2.conso_reelle,3)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",fontWeight:700,color:col.text}}>{c2.ecart_kg>=0?"+":""}{fmtN(c2.ecart_kg,3)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center"}}>
+                      <span style={{background:col.bg,color:col.text,padding:"3px 8px",borderRadius:10,fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>
+                        {col.label} {c2.ecart_kg>=0?"+":""}{fmtN(c2.ecart_pct,1)}%
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr style={{background:"#e8eaf6",borderTop:"2px solid #1a237e"}}>
+                <td style={{padding:"8px 10px",fontWeight:700,fontSize:12}} colSpan={6}>TOTAL</td>
+                <td style={{padding:"8px 10px",textAlign:"center",fontWeight:700,color:protAccent}}>{fmtN(totalTheo,3)}</td>
+                <td colSpan={3}></td>
+                <td colSpan={2}></td>
+                <td style={{padding:"8px 10px",textAlign:"center",fontWeight:700,color:"#e65100"}}>{fmtN(totalReel,3)}</td>
+                <td style={{padding:"8px 10px",textAlign:"center",fontWeight:700,color:globalCol.text}}>{totalEcart>=0?"+":""}{fmtN(totalEcart,3)}</td>
+                <td style={{padding:"8px 10px",textAlign:"center"}}>
+                  <span style={{background:globalCol.bg,color:globalCol.text,padding:"3px 8px",borderRadius:10,fontWeight:700,fontSize:11}}>
+                    {globalCol.label} {totalEcart>=0?"+":""}{fmtN(totalEcartPct,1)}%
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div style={{marginTop:10,fontSize:10,color:"#bbb"}}>* Cases jaunes = saisie manuelle · Cmd brut = kg commandés brut semaine</div>
+      </div>
+    );
+  };
+
+  // ── Render ──
+  return(
+    <div style={{fontFamily:"system-ui,sans-serif",padding:"18px 16px",color:"#111",maxWidth:960,margin:"0 auto"}}>
+
+      {/* Header */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div>
+          <div style={{fontSize:10,fontWeight:600,letterSpacing:".08em",color:"#aaa",textTransform:"uppercase",marginBottom:2}}>ILIA · Food Cost</div>
+          <div style={{fontSize:20,fontWeight:700}}>{mode==="achats"?"Analyse fournisseurs":"Contrôle protéines hebdo"}</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          {saved&&<span style={{fontSize:11,color:"#059669"}}>✓ Sauvegardé</span>}
+          <button onClick={async()=>{ if(!window.confirm("Réinitialiser ?")) return; try{await window.storage.delete("ilia_fc_v8");}catch{} setData(INIT); }} style={{fontSize:11,color:"#dc2626",background:"none",border:"1px solid #fecaca",borderRadius:5,padding:"3px 9px",cursor:"pointer"}}>Reset</button>
+        </div>
+      </div>
+
+      {/* Top nav */}
+      <div style={{display:"flex",gap:6,marginBottom:20,padding:"4px",background:"#f0f0ee",borderRadius:10,width:"fit-content"}}>
+        {[["achats","📦 Achats"],["controle","🔬 Contrôle hebdo"]].map(([m,label])=>(
+          <button key={m} onClick={()=>setMode(m)} style={{padding:"7px 18px",fontSize:13,fontWeight:mode===m?700:400,background:mode===m?"#fff":"transparent",color:mode===m?"#111":"#888",border:"none",borderRadius:7,cursor:"pointer",boxShadow:mode===m?"0 1px 4px rgba(0,0,0,.1)":"none",transition:"all .15s"}}>{label}</button>
+        ))}
+      </div>
+
+      {/* ── CONTROLE MODE ── */}
+      {mode==="controle"&&(
+        <div>
+          <div style={{display:"flex",gap:5,marginBottom:16}}>
+            {[["detail","Par restaurant"],["comparaison","Comparaison restaurants"]].map(([v,l])=>(
+              <button key={v} onClick={()=>setCtrlViewMode(v)} style={{fontSize:12,padding:"5px 13px",borderRadius:20,border:"1px solid",borderColor:ctrlViewMode===v?"#1a237e":"#e0e0e0",background:ctrlViewMode===v?"#1a237e":"#fff",color:ctrlViewMode===v?"#fff":"#666",cursor:"pointer",fontWeight:ctrlViewMode===v?600:400}}>{l}</button>
+            ))}
+          </div>
+          <ControleView/>
+        </div>
+      )}
+
+      {/* ── ACHATS MODE ── */}
+      {mode==="achats"&&(
+        <>
+          {/* Période filter */}
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:16}}>
+            <span style={{fontSize:11,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em"}}>Période</span>
+            <div style={{display:"flex",gap:4}}>
+              {["Tous",...MOIS].map(m=>(
+                <button key={m} onClick={()=>setMoisFilter(m)} style={{fontSize:12,padding:"4px 12px",borderRadius:20,border:"1px solid",borderColor:moisFilter===m?"#111":"#e0e0e0",background:moisFilter===m?"#111":"#fff",color:moisFilter===m?"#fff":"#666",cursor:"pointer",fontWeight:moisFilter===m?600:400,transition:"all .15s"}}>{m}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* KPI cards */}
+          <div style={{display:"flex",gap:8,marginBottom:18,flexWrap:"wrap"}}>
+            {[["Total",fmtK(globalTotal),moisFilter==="Tous"?`${MOIS.length} mois`:moisFilter,"#111"],...FOURNISSEURS.map(f=>{const{total:t}=rows(f);return[f,fmtK(t),t>0?pct(t,globalTotal)+" du total":"En attente",t>0?COLORS[f]?.accent||"#555":"#bbb"];})].map(([lbl,val,sub,accent])=>(
+              <div key={lbl} style={{background:"#f8f8f6",borderRadius:8,padding:"12px 16px",flex:1,minWidth:110}}>
+                <div style={{fontSize:10,color:"#888",fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:3}}>{lbl}</div>
+                <div style={{fontSize:17,fontWeight:700,color:accent}}>{val}</div>
+                <div style={{fontSize:10,color:"#999",marginTop:2}}>{sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Coverage */}
+          <div style={{background:"#f8f8f6",borderRadius:8,padding:"10px 12px",marginBottom:18}}>
+            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em",marginBottom:7}}>Avancement — {tab}</div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {coverage.map(({r,m,has})=>(
+                <div key={r+m} style={{fontSize:10,padding:"2px 8px",borderRadius:5,background:has?c.accent:"#e5e5e5",color:has?"#fff":"#999",fontWeight:has?600:400,opacity:moisFilter!=="Tous"&&m!==moisFilter?.35:1}}>{r} · {m.slice(0,3)}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* Fournisseur tabs */}
+          <div style={{borderBottom:"2px solid #f0f0ee",marginBottom:14,display:"flex",overflowX:"auto"}}>
+            {FOURNISSEURS.map(f=>(
+              <button key={f} onClick={()=>{setTab(f);setView("ingredients");}} style={{padding:"7px 14px",fontSize:12,fontWeight:tab===f?600:400,color:tab===f?"#111":"#666",background:"transparent",border:"none",borderBottom:tab===f?"2px solid #111":"2px solid transparent",cursor:"pointer",marginBottom:-2,whiteSpace:"nowrap"}}>{f}</button>
+            ))}
+          </div>
+
+          {/* View switcher */}
+          <div style={{display:"flex",gap:5,marginBottom:16}}><Btn v="ingredients" label="Par ingrédient"/><Btn v="restaurants" label="Par restaurant"/><Btn v="saisie" label="Saisie"/></div>
+
+          {/* Ingrédients view */}
+          {view==="ingredients"&&(ings.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"#bbb"}}>Aucune donnée pour cette période</div>:
+            <div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}><span style={{fontSize:12,color:"#888"}}>{ings.length} références</span><span style={{fontSize:13,fontWeight:700,color:c.accent}}>{fmt(total)}</span></div>
+              <div style={{background:c.bg,borderRadius:8,padding:"12px 14px",marginBottom:16}}>
+                <div style={{fontSize:10,fontWeight:600,color:c.text,textTransform:"uppercase",letterSpacing:".06em",marginBottom:7}}>Top 5 — {pct(ings.slice(0,5).reduce((s,[,v])=>s+v.montant,0),total)} du total</div>
+                {ings.slice(0,5).map(([ing,{montant:amt,qty,unit}],i)=>(
+                  <div key={ing} style={{display:"flex",justifyContent:"space-between",fontSize:12,padding:"4px 0",borderBottom:i<4?`1px solid ${c.light}`:"none",alignItems:"center"}}>
+                    <span style={{color:c.text}}>{["🥇","🥈","🥉","4️⃣","5️⃣"][i]} {ing}</span>
+                    <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                      {qty>0&&<span style={{fontSize:11,color:c.text,background:c.light,padding:"1px 7px",borderRadius:4}}>{qty} {unit}</span>}
+                      <span style={{fontWeight:700,color:c.accent}}>{fmt(amt)} <span style={{fontWeight:400,fontSize:11}}>({pct(amt,total)})</span></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                  <thead><tr style={{borderBottom:"2px solid #f0f0ee"}}>
+                    <th style={{textAlign:"left",padding:"6px 8px",color:"#888",fontWeight:600,fontSize:11,width:24}}>#</th>
+                    <th style={{textAlign:"left",padding:"6px 8px",color:"#888",fontWeight:600,fontSize:11}}>Ingrédient</th>
+                    <th style={{textAlign:"center",padding:"6px 8px",color:"#888",fontWeight:600,fontSize:11,width:60}}>Qté</th>
+                    <th style={{textAlign:"left",padding:"6px 8px",color:"#888",fontWeight:600,fontSize:11,width:90}}>Unité</th>
+                    <th style={{textAlign:"right",padding:"6px 8px",color:"#888",fontWeight:600,fontSize:11,width:90}}>Montant HT</th>
+                    <th style={{textAlign:"right",padding:"6px 8px",color:"#888",fontWeight:600,fontSize:11,width:44}}>%</th>
+                    <th style={{padding:"6px 8px",width:100}}></th>
+                  </tr></thead>
+                  <tbody>
+                    {ings.map(([ing,{montant:amt,qty,unit}],i)=>{
+                      const w=total>0?Math.min((amt/total)*100,100):0;
+                      return(<tr key={ing} style={{borderBottom:"1px solid #f8f8f6",background:i<5?"#fffbeb":"transparent"}}>
+                        <td style={{padding:"6px 8px",color:"#ccc",fontSize:11}}>{i+1}</td>
+                        <td style={{padding:"6px 8px",fontWeight:i<3?600:400}}>{ing}</td>
+                        <td style={{padding:"6px 8px",textAlign:"center",fontWeight:600,color:c.accent}}>{qty>0?qty:"—"}</td>
+                        <td style={{padding:"6px 8px",color:"#888",fontSize:11}}>{unit||"—"}</td>
+                        <td style={{padding:"6px 8px",textAlign:"right",fontWeight:600}}>{fmt(amt)}</td>
+                        <td style={{padding:"6px 8px",textAlign:"right",color:"#888",fontSize:11}}>{pct(amt,total)}</td>
+                        <td style={{padding:"6px 8px"}}><div style={{background:"#f0f0ee",borderRadius:3,height:6}}><div style={{width:`${w.toFixed(0)}%`,height:6,background:c.accent,borderRadius:3}}/></div></td>
+                      </tr>);
+                    })}
+                  </tbody>
+                  <tfoot><tr style={{borderTop:"2px solid #e0e0e0",background:"#f8f8f6"}}><td colSpan={4} style={{padding:"7px 8px",fontWeight:700,fontSize:12}}>TOTAL</td><td style={{padding:"7px 8px",textAlign:"right",fontWeight:700,color:c.accent,fontSize:13}}>{fmt(total)}</td><td colSpan={2}/></tr></tfoot>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Restaurants view */}
+          {view==="restaurants"&&(rests.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"#bbb"}}>Aucune donnée</div>:
+            <div>
+              {rests.map(([r,amt],i)=>(<div key={r} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderBottom:"1px solid #f0f0ee"}}><span style={{fontSize:13,flex:1,fontWeight:600}}>{r}</span><div style={{width:120,background:"#f0f0ee",borderRadius:3,height:7}}><div style={{width:`${total>0?Math.min((amt/total)*100,100):0}%`,height:7,background:RC[i%RC.length],borderRadius:3}}/></div><span style={{fontSize:13,fontWeight:600,minWidth:78,textAlign:"right"}}>{fmt(amt)}</span><span style={{fontSize:11,color:"#aaa",minWidth:36,textAlign:"right"}}>{pct(amt,total)}</span></div>))}
+              <div style={{marginTop:24}}>{RESTAURANTS.map((rest,ri)=>{
+                const lines=filteredEntries(tab).filter(([k])=>k.split("__")[1]===rest).flatMap(([,a])=>a);
+                if(!lines.length) return null;
+                const byI={};lines.forEach(l=>{if(!byI[l.ingredient])byI[l.ingredient]={montant:0,qty:0,unit:l.unit||""};byI[l.ingredient].montant+=l.montant;byI[l.ingredient].qty+=(l.qty||0);});
+                const sorted=Object.entries(byI).sort((a,b)=>b[1].montant-a[1].montant);
+                const rt=sorted.reduce((s,[,v])=>s+v.montant,0);
+                return(<div key={rest} style={{marginBottom:16,background:"#fafaf8",borderRadius:8,padding:"12px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontWeight:700,fontSize:13}}>{rest}</span><span style={{fontWeight:700,fontSize:13,color:RC[ri]}}>{fmt(rt)}</span></div>
+                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                    <thead><tr style={{borderBottom:"1px solid #ebebeb"}}><th style={{textAlign:"left",padding:"3px 6px",color:"#aaa",fontWeight:500,fontSize:10}}>Ingrédient</th><th style={{textAlign:"center",padding:"3px 6px",color:"#aaa",fontWeight:500,fontSize:10,width:50}}>Qté</th><th style={{textAlign:"left",padding:"3px 6px",color:"#aaa",fontWeight:500,fontSize:10,width:80}}>Unité</th><th style={{textAlign:"right",padding:"3px 6px",color:"#aaa",fontWeight:500,fontSize:10,width:80}}>Montant</th><th style={{textAlign:"right",padding:"3px 6px",color:"#aaa",fontWeight:500,fontSize:10,width:40}}>%</th></tr></thead>
+                    <tbody>{sorted.slice(0,12).map(([ig,{montant:amt,qty,unit}])=>(<tr key={ig} style={{borderBottom:"1px solid #f2f2f2"}}><td style={{padding:"4px 6px"}}>{ig}</td><td style={{padding:"4px 6px",textAlign:"center",fontWeight:600,color:RC[ri]}}>{qty>0?qty:"—"}</td><td style={{padding:"4px 6px",color:"#888",fontSize:11}}>{unit||"—"}</td><td style={{padding:"4px 6px",textAlign:"right",fontWeight:600}}>{fmt(amt)}</td><td style={{padding:"4px 6px",textAlign:"right",color:"#aaa",fontSize:11}}>{pct(amt,rt)}</td></tr>))}</tbody>
+                  </table>
+                  {sorted.length>12&&<div style={{fontSize:10,color:"#aaa",textAlign:"center",marginTop:4}}>+{sorted.length-12} autres</div>}
+                </div>);
+              })}</div>
+            </div>
+          )}
+
+          {/* Saisie view */}
+          {view==="saisie"&&(
+            <div>
+              <div style={{background:"#fafaf8",borderRadius:10,padding:16,marginBottom:18,border:"1px solid #eee"}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#444",marginBottom:12}}>Ajouter une ligne</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
+                  {[["Fournisseur","fournisseur",FOURNISSEURS],["Restaurant","restaurant",RESTAURANTS],["Mois","mois",MOIS]].map(([lbl,k,opts])=>(
+                    <div key={k}><div style={{fontSize:10,color:"#888",marginBottom:3}}>{lbl}</div><select value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} style={{width:"100%",padding:"6px 8px",borderRadius:6,border:"1px solid #ddd",fontSize:12}}>{opts.map(o=><option key={o}>{o}</option>)}</select></div>
+                  ))}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"2fr 70px 100px 110px auto",gap:8,alignItems:"flex-end"}}>
+                  {[["Ingrédient","ingredient","text","ex: Riz rouge"],["Qté","qty","number","0"],["Unité","unit","text","ex: kg"],["Montant HT (€)","montant","number","0.00"]].map(([lbl,k,type,ph])=>(
+                    <div key={k}><div style={{fontSize:10,color:"#888",marginBottom:3}}>{lbl}</div><input type={type} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&addLine()} placeholder={ph} style={{width:"100%",padding:"6px 8px",borderRadius:6,border:"1px solid #ddd",fontSize:12,boxSizing:"border-box"}}/></div>
+                  ))}
+                  <button onClick={addLine} style={{padding:"6px 14px",background:"#111",color:"#fff",border:"none",borderRadius:6,fontSize:12,fontWeight:600,cursor:"pointer"}}>+ Ajouter</button>
+                </div>
+              </div>
+              {Object.entries(data).filter(([k])=>{const[f,,m]=k.split("__");return f===tab&&(moisFilter==="Tous"||m===moisFilter);}).map(([key,lines])=>{
+                const[,rest,mois]=key.split("__"); const tot=lines.reduce((s,l)=>s+l.montant,0);
+                return(<div key={key} style={{marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5,fontSize:11,fontWeight:600,color:"#888"}}><span style={{background:c.bg,color:c.text,borderRadius:4,padding:"1px 6px"}}>{rest}</span><span>{mois}</span><span style={{marginLeft:"auto",color:c.accent,fontWeight:700}}>{fmt(tot)}</span></div>
+                  {lines.map((l,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",background:"#fafaf8",borderRadius:5,marginBottom:2}}><span style={{flex:1,fontSize:12}}>{l.ingredient}</span>{l.qty>0&&<span style={{fontSize:11,color:"#888",background:"#f0f0ee",padding:"1px 6px",borderRadius:3}}>{l.qty} {l.unit}</span>}<span style={{fontSize:12,fontWeight:600}}>{fmt(l.montant)}</span><button onClick={()=>delLine(key,i)} style={{fontSize:11,color:"#dc2626",background:"none",border:"none",cursor:"pointer"}}>✕</button></div>))}
+                </div>);
+              })}
+            </div>
+          )}
+        </>
+      )}
+      <div style={{marginTop:24,fontSize:10,color:"#ddd",textAlign:"center"}}>ILIA Groupe © 2026</div>
+    </div>
+  );
+
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
