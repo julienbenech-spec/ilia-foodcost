@@ -400,10 +400,21 @@ function App() {
 
     const pp = params.proteines[protIdx] || params.proteines[0];
 
+    // Restriction de saisie par semaine
+    const currentWeek = getCurrentWeek();
+    const currentWeekNum = parseInt(currentWeek.replace("S",""));
+    const selWeekNum = parseInt(invSem.replace("S",""));
+    const isFutureWeek = selWeekNum > currentWeekNum;
+    const isPastWeek = selWeekNum < currentWeekNum;
+    // Données existantes pour cette semaine/resto
+    const hasPastData = isPastWeek && params.proteines.some(p => getLines(finKey(invRest, invSem), p.name).length > 0);
+    // Bloqué si : semaine future, ou semaine passée sans données
+    const isWeekBlocked = isFutureWeek || (isPastWeek && !hasPastData);
+
     const sk         = finKey(invRest, invSem);
     const lines      = invSection === "fin" ? getLines(sk, pp.name) : [];
     const skEditable = invSection === "fin" ? finKey(invRest, invSem) : null;
-    const isReadOnly = valFin;
+    const isReadOnly = valFin || (isPastWeek && hasPastData);
     const accent     = "#1a237e";
     const totalEquiv = calcTotalFromLines(lines, pp.name, params);
     const vk         = vkFin;
@@ -467,8 +478,23 @@ function App() {
           ))}
         </div>
 
+        {/* ── Bannière blocage semaine ── */}
+        {isWeekBlocked && (
+          <div style={{padding:"20px 16px",borderRadius:12,background:isFutureWeek?"#e3f2fd":"#fff3e0",border:`1px solid ${isFutureWeek?"#bbdefb":"#ffe0b2"}`,textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:24,marginBottom:8}}>{isFutureWeek?"🔒":"📭"}</div>
+            <div style={{fontSize:15,fontWeight:700,color:isFutureWeek?"#1565c0":"#e65100",marginBottom:4}}>
+              {isFutureWeek?"Semaine future":"Aucune donnée"}
+            </div>
+            <div style={{fontSize:13,color:"#666"}}>
+              {isFutureWeek
+                ? "La saisie n'est pas encore disponible pour cette semaine."
+                : "Aucun inventaire n'a été saisi pour cette semaine passée."}
+            </div>
+          </div>
+        )}
+
         {/* ── FIN ── */}
-        {invSection !== "transfert" && (
+        {invSection !== "transfert" && !isWeekBlocked && (
           <div>
 
             {/* Onglets protéines */}
@@ -557,24 +583,32 @@ function App() {
             </div>
 
             {/* Validation */}
-            {isVal
+            {isPastWeek && hasPastData && isReadOnly
               ? <div style={{display:"flex",gap:8,alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"#e8f5e9",borderRadius:12,border:"1px solid #a5d6a7"}}>
-                  <span style={{fontSize:14,fontWeight:700,color:"#2e7d32"}}>✓ Inventaire validé</span>
+                  <span style={{fontSize:14,fontWeight:700,color:"#2e7d32"}}>✓ Inventaire semaine passée</span>
                   <button onClick={() => unvalidate(vk)}
                     style={{padding:"8px 16px",background:"#fff",color:"#666",border:"1px solid #ddd",borderRadius:8,fontSize:13,cursor:"pointer"}}>
                     Modifier
                   </button>
                 </div>
-              : <button onClick={() => {
-                    const any = params.proteines.some(p => getLines(finKey(invRest, invSem), p.name).length > 0);
-                    if (!any) { alert("Ajoutez au moins une ligne avant de valider."); return; }
-                    validate(vk);
-                    const lignes = getLines(finKey(invRest, invSem), pp.name);
-                    syncInventaireToSheets(invRest, invSem, pp.name, "fin", lignes, true);
-                  }}
-                  style={{width:"100%",padding:"16px",background:"#1a237e",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 12px rgba(26,35,126,.3)"}}>
-                  ✓ Valider la pesée
-                </button>
+              : isVal
+                ? <div style={{display:"flex",gap:8,alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"#e8f5e9",borderRadius:12,border:"1px solid #a5d6a7"}}>
+                    <span style={{fontSize:14,fontWeight:700,color:"#2e7d32"}}>✓ Pesée validée</span>
+                    <button onClick={() => unvalidate(vk)}
+                      style={{padding:"8px 16px",background:"#fff",color:"#666",border:"1px solid #ddd",borderRadius:8,fontSize:13,cursor:"pointer"}}>
+                      Modifier
+                    </button>
+                  </div>
+                : <button onClick={() => {
+                      const any = params.proteines.some(p => getLines(finKey(invRest, invSem), p.name).length > 0);
+                      if (!any) { alert("Ajoutez au moins une ligne avant de valider."); return; }
+                      validate(vk);
+                      const lignes = getLines(finKey(invRest, invSem), pp.name);
+                      syncInventaireToSheets(invRest, invSem, pp.name, "fin", lignes, true);
+                    }}
+                    style={{width:"100%",padding:"16px",background:"#1a237e",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 12px rgba(26,35,126,.3)"}}>
+                    ✓ Valider la pesée
+                  </button>
             }
           </div>
         )}
