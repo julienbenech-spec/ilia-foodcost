@@ -526,21 +526,16 @@ function App() {
                           ))}
                         </div>
                     }
-                    {/* Poids brut / Tare */}
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:8}}>
-                      {[["Poids brut (kg)","poids_brut",l.poids_brut],["Tare (kg)","tare",l.tare]].map(([lbl,field,val]) => (
-                        <div key={field}>
-                          <div style={{fontSize:11,color:"#999",marginBottom:4}}>{lbl}</div>
-                          {isReadOnly
-                            ? <div style={{fontSize:16,fontWeight:600,color:"#333",padding:"10px 0"}}>{fmtN(val,3)}</div>
-                            : <NumInput value={val} onChange={v => skEditable && updateLine2(skEditable, pp.name, idx, field, v)}/>
-                          }
-                        </div>
-                      ))}
+                    {/* Poids brut uniquement (tare masquée) */}
+                    <div style={{marginBottom:8}}>
+                      <div style={{fontSize:11,color:"#999",marginBottom:4}}>Poids brut (kg)</div>
+                      {isReadOnly
+                        ? <div style={{fontSize:16,fontWeight:600,color:"#333",padding:"10px 0"}}>{fmtN(l.poids_brut,3)}</div>
+                        : <NumInput value={l.poids_brut} onChange={v => skEditable && updateLine2(skEditable, pp.name, idx, "poids_brut", v)}/>
+                      }
                     </div>
                     {/* Résultat */}
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",background:"#f5f5f5",borderRadius:8}}>
-                      <span style={{fontSize:12,color:"#888"}}>Net : <strong style={{color:"#333"}}>{fmtN(net,3)} kg</strong></span>
                       <span style={{fontSize:13,fontWeight:700,color:isVal?"#2e7d32":accent}}>≡ {fmtN(equiv,3)} kg cru net</span>
                     </div>
                     {!isReadOnly && (
@@ -643,16 +638,12 @@ function App() {
                   </div>
                 </div>
                 {/* Poids */}
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-                  {[["Poids brut (kg)","poids_brut"],["Tare (kg)","tare"]].map(([lbl, f]) => (
-                    <div key={f}>
-                      <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>{lbl}</div>
-                      <input inputMode="decimal" value={transForm[f]}
-                        onChange={e => setTransForm(tf => ({...tf, [f]: e.target.value}))}
-                        placeholder="0.00"
-                        style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:16,textAlign:"center",background:"#fffde7",boxSizing:"border-box"}}/>
-                    </div>
-                  ))}
+                <div style={{marginBottom:12}}>
+                  <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Poids brut (kg)</div>
+                  <input inputMode="decimal" value={transForm.poids_brut}
+                    onChange={e => setTransForm(tf => ({...tf, poids_brut: e.target.value}))}
+                    placeholder="0.00"
+                    style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:16,textAlign:"center",background:"#fffde7",boxSizing:"border-box"}}/>
                 </div>
                 {/* Note */}
                 <div style={{marginBottom:14}}>
@@ -664,14 +655,14 @@ function App() {
                 {/* Aperçu équiv. cru */}
                 {transForm.poids_brut && transForm.etat && (
                   <div style={{padding:"10px 14px",background:"#e8f5e9",borderRadius:8,marginBottom:12,fontSize:13,color:"#2e7d32",fontWeight:600,textAlign:"center"}}>
-                    ≡ {fmtN(calcEquivCru(parseFloat(transForm.poids_brut)||0, parseFloat(transForm.tare)||0, getCoeffCruPure(params, transForm.prot, transForm.etat)), 3)} kg cru net
+                    ≡ {fmtN(calcEquivCru(parseFloat(transForm.poids_brut)||0, 0, getCoeffCruPure(params, transForm.prot, transForm.etat)), 3)} kg cru net
                   </div>
                 )}
                 <button
                   onClick={() => {
                     if (!transForm.poids_brut || !transForm.etat) return;
-                    addTransfer(invRest, transForm.to, invSem, transForm.prot, transForm.etat, transForm.poids_brut, transForm.tare, transForm.note);
-                    setTransForm(f => ({...f, etat:"", poids_brut:"", tare:"", note:""}));
+                    addTransfer(invRest, transForm.to, invSem, transForm.prot, transForm.etat, transForm.poids_brut, 0, transForm.note);
+                    setTransForm(f => ({...f, etat:"", poids_brut:"", note:""}));
                     setShowTrans(false);
                   }}
                   style={{width:"100%",padding:"16px",background:"#e65100",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer"}}>
