@@ -41,7 +41,9 @@ async function syncInventaireToSheets(restaurant, semaine, proteine, type, ligne
 }
 
 async function syncTransfertToSheets(transfert) {
-  return syncToSheets({ action: "saveTransfert", ...transfert });
+  // Normalise "sem" → "semaine" pour le Apps Script
+  const payload = { action: "saveTransfert", ...transfert, semaine: transfert.sem || transfert.semaine || "" };
+  return syncToSheets(payload);
 }
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────
