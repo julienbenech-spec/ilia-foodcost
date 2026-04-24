@@ -922,13 +922,11 @@ function App() {
           <div><SectionLabel>Restaurant</SectionLabel><RestSelector val={ctrlRest} set={setCtrlRest}/></div>
         </div>
         <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-          {[["Inv. Début",debOk],["Inv. Fin",finOk]].map(([lbl,ok])=>(
-            <div key={lbl} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:6,background:ok?"#e8f5e9":"#fff3e0",border:`1px solid ${ok?"#a5d6a7":"#ffe0b2"}`}}>
-              <span style={{fontSize:11,fontWeight:600,color:ok?"#2e7d32":"#e65100"}}>{ok?"✓":"⚠"} {lbl}</span>
-              <span style={{fontSize:10,color:ok?"#2e7d32":"#e65100"}}>{ok?"Validé":"Non validé"}</span>
-            </div>
-          ))}
-          {(!debOk||!finOk)&&<div style={{fontSize:11,color:"#888",display:"flex",alignItems:"center"}}>→ Validez les inventaires dans l'onglet Inventaire</div>}
+          <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:6,background:finOk?"#e8f5e9":"#fff3e0",border:`1px solid ${finOk?"#a5d6a7":"#ffe0b2"}`}}>
+            <span style={{fontSize:11,fontWeight:600,color:finOk?"#2e7d32":"#e65100"}}>{finOk?"✓":"⚠"} Inv. Fin</span>
+            <span style={{fontSize:10,color:finOk?"#2e7d32":"#e65100"}}>{finOk?"Validé":"Non validé"}</span>
+          </div>
+          {!finOk&&<div style={{fontSize:11,color:"#888",display:"flex",alignItems:"center"}}>→ Validez l'inventaire dans l'onglet Inventaire</div>}
         </div>
         <div style={{display:"inline-flex",alignItems:"center",gap:10,background:gCol.bg,borderRadius:8,padding:"10px 18px",marginBottom:16,borderLeft:`3px solid ${gCol.text}`}}>
           <span style={{fontSize:10,fontWeight:700,color:gCol.text,textTransform:"uppercase",letterSpacing:".06em"}}>Écart total</span>
@@ -952,7 +950,7 @@ function App() {
                   <tr key={pp.name} style={{background:i%2===0?"#fafafa":"#fff",borderBottom:"1px solid #efefef"}}>
                     <td style={{padding:"7px 10px",fontWeight:700}}>{pp.name}</td>
                     <td style={{padding:"6px 8px",textAlign:"center"}}><span style={{background:col.bg,color:col.text,padding:"3px 8px",borderRadius:10,fontWeight:700,fontSize:11}}>{cv.ecart_kg>=0?"+":""}{fmtN(cv.ecart_pct,1)}%</span></td>
-                    <td style={{padding:"6px 8px",textAlign:"center",color:debOk?"#2e7d32":"#aaa",fontWeight:debOk?700:400,fontSize:11}}>{fmtN(cv.inv_debut,3)}{debOk&&<span style={{fontSize:9,color:"#a5d6a7",marginLeft:3}}>✓</span>}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",color:"#555",fontSize:11}}>{fmtN(cv.inv_debut,3)}</td>
                     <td style={{padding:"6px 8px",textAlign:"center",color:finOk?"#2e7d32":"#aaa",fontWeight:finOk?700:400,fontSize:11}}>{fmtN(cv.inv_fin,3)}{finOk&&<span style={{fontSize:9,color:"#a5d6a7",marginLeft:3}}>✓</span>}</td>
                     <td style={{padding:"6px 8px",textAlign:"center",color:cv.trans_net>=0?"#2e7d32":"#c62828",fontWeight:600,fontSize:11}}>{cv.trans_net>=0?"+":""}{fmtN(cv.trans_net,3)}</td>
                     <td style={{padding:"6px 8px",textAlign:"center"}}><input type="number" min="0" value={d.portions_sig||""} placeholder="0" onChange={e=>updateCtrlProt(ctrlRest,ctrlSem,pp.name,"portions_sig",e.target.value)} style={{width:58,padding:"3px 5px",border:"1px solid #ddd",borderRadius:4,fontSize:11,textAlign:"center",background:"#fffde7"}}/></td>
