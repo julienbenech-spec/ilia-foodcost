@@ -52,7 +52,8 @@ function saveInventaire(data) {
 function saveTransfert(data) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName("Transferts");
-  sheet.appendRow([data.from, data.to, data.semaine, data.prot, data.etat || "", data.poids_brut || 0, data.tare || 0, data.qty_net || 0, data.note || "", data.date || new Date().toLocaleDateString("fr-FR")]);
+  const sem = data.semaine || data.sem || "";
+  sheet.appendRow([data.from, data.to, sem, data.prot, data.etat || "", data.poids_brut || 0, data.tare || 0, data.qty_net || 0, data.note || "", data.date || new Date().toLocaleDateString("fr-FR")]);
   return jsonResponse({ ok: true });
 }
 
