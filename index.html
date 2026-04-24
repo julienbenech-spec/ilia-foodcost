@@ -68,11 +68,38 @@ const sheetsRowsToTransfers = (rows) => rows.map((row, i) => ({
   note: row.note || "", date: row.date || ""
 }));
 
+const loadZeltyFromSheets = async () => {
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL}?action=getZelty`);
+    const json = await resp.json();
+    const rows = json.rows || [];
+    if (rows.length === 0) return { data: {}, ok: false };
+    const data = {};
+    rows.forEach(row => {
+      const resto = row.restaurant;
+      const sem = row.semaine;
+      const prot = row.proteine;
+      if (!data[resto]) data[resto] = {};
+      if (!data[resto][sem]) data[resto][sem] = {};
+      data[resto][sem][prot] = {
+        portions_sig: parseFloat(row.portions_sig) || 0,
+        portions_opt: parseFloat(row.portions_opt) || 0,
+        cmd_brut: 0, inv_debut: 0, inv_fin: 0
+      };
+    });
+    return { data, ok: true };
+  } catch(e) {
+    console.warn("loadZeltyFromSheets failed:", e);
+    return { data: {}, ok: false };
+  }
+};
+
 const loadFromSheets = async (currentInvData, currentTransfers) => {
   try {
-    const [invResp, transResp] = await Promise.all([
+    const [invResp, transResp, zeltyResult] = await Promise.all([
       fetch(`${APPS_SCRIPT_URL}?action=getInventaire`),
-      fetch(`${APPS_SCRIPT_URL}?action=getTransferts`)
+      fetch(`${APPS_SCRIPT_URL}?action=getTransferts`),
+      loadZeltyFromSheets()
     ]);
     const invJson = await invResp.json();
     const transJson = await transResp.json();
@@ -88,10 +115,10 @@ const loadFromSheets = async (currentInvData, currentTransfers) => {
     });
     // For transfers: if Sheets returned data, use Sheets; otherwise keep localStorage
     const mergedTrans = sheetsTrans.length > 0 ? sheetsTrans : (currentTransfers || []);
-    return {invData: mergedInv, transfers: mergedTrans, ok: true};
+    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, ok: true};
   } catch(e) {
     console.warn("loadFromSheets failed, using localStorage only:", e);
-    return {invData: currentInvData, transfers: currentTransfers, ok: false};
+    return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, ok: false};
   }
 };
 
@@ -326,6 +353,27 @@ function App() {
       persist(SK.inv, result.invData);
       setTransfers(result.transfers);
       persist(SK.trans, result.transfers);
+      // Merger les données Zelty depuis Sheets dans ctrlData (SANS écraser cmd_brut saisi manuellement)
+      if (result.zeltyOk && Object.keys(result.zeltyData).length > 0) {
+        setCtrlData(prev => {
+          const updated = {...prev};
+          try {
+            Object.entries(result.zeltyData).forEach(([resto, weeks]) => {
+              Object.entries(weeks).forEach(([sem, prots]) => {
+                const key = "ctrl__" + resto + "__" + sem;
+                if (!updated[key]) updated[key] = {};
+                Object.entries(prots).forEach(([prot, vals]) => {
+                  if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
+                  updated[key][prot].portions_sig = vals.portions_sig;
+                  updated[key][prot].portions_opt = vals.portions_opt;
+                  // Ne pas écraser cmd_brut, inv_debut, inv_fin (saisis manuellement)
+                });
+              });
+            });
+          } catch(e) {}
+          return updated;
+        });
+      }
       setSyncStatus("ok");
       setTimeout(() => setSyncStatus("idle"), 3000);
     } else {
@@ -365,6 +413,27 @@ function App() {
         persist(SK.inv, result.invData);
         setTransfers(result.transfers);
         persist(SK.trans, result.transfers);
+        // Merger les données Zelty depuis Sheets dans ctrlData (SANS écraser cmd_brut saisi manuellement)
+        if (result.zeltyOk && Object.keys(result.zeltyData).length > 0) {
+          setCtrlData(prev => {
+            const updated = {...prev};
+            try {
+              Object.entries(result.zeltyData).forEach(([resto, weeks]) => {
+                Object.entries(weeks).forEach(([sem, prots]) => {
+                  const key = "ctrl__" + resto + "__" + sem;
+                  if (!updated[key]) updated[key] = {};
+                  Object.entries(prots).forEach(([prot, vals]) => {
+                    if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
+                    updated[key][prot].portions_sig = vals.portions_sig;
+                    updated[key][prot].portions_opt = vals.portions_opt;
+                    // Ne pas écraser cmd_brut, inv_debut, inv_fin (saisis manuellement)
+                  });
+                });
+              });
+            } catch(e) {}
+            return updated;
+          });
+        }
         setSyncStatus("ok");
         setTimeout(() => setSyncStatus("idle"), 3000);
       } else {
@@ -373,6 +442,7 @@ function App() {
     })();
   },[]);
 
+  // fallback si Sheets vide : applique ZELTY_DATA hardcodé uniquement si portions_sig === 0 (non rempli par Sheets)
   useEffect(()=>{
     if(!isLoaded) return;
     setCtrlData(prev => {
@@ -384,10 +454,15 @@ function App() {
             if (!updated[key]) updated[key] = {};
             Object.entries(prots).forEach(([prot, vals]) => {
               if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
-              updated[key][prot].portions_sig = vals.portions_sig;
-              updated[key][prot].portions_opt = vals.portions_opt;
-              // inv_fin si disponible
-              if(vals.inv_fin !== undefined) updated[key][prot].inv_fin = vals.inv_fin;
+              // Fallback : on n'écrase que si Sheets n'a pas déjà rempli les portions (portions_sig === 0)
+              if (!updated[key][prot].portions_sig && !updated[key][prot].portions_opt) {
+                updated[key][prot].portions_sig = vals.portions_sig;
+                updated[key][prot].portions_opt = vals.portions_opt;
+              }
+              // inv_fin si disponible dans les données hardcodées (données historiques)
+              if(vals.inv_fin !== undefined && vals.inv_fin !== 0 && !updated[key][prot].inv_fin) {
+                updated[key][prot].inv_fin = vals.inv_fin;
+              }
             });
           });
         });

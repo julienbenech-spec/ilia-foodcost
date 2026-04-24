@@ -27,6 +27,7 @@ function doGet(e) {
     const action = e.parameter.action;
     if (action === "getInventaire") return getInventaire(e.parameter);
     if (action === "getTransferts") return getTransferts(e.parameter);
+    if (action === "getZelty") return getZelty(e.parameter);
     return jsonResponse({ error: "Unknown action" });
   } catch (err) {
     return jsonResponse({ error: err.message });
@@ -79,6 +80,23 @@ function getTransferts(params) {
     return { from: row[0], to: row[1], semaine: row[2], prot: row[3], etat: row[4], poids_brut: row[5], tare: row[6], qty_net: row[7], note: row[8], date: row[9] };
   });
   if (params.semaine) rows = rows.filter(function(r) { return r.semaine === params.semaine; });
+  return jsonResponse({ rows: rows });
+}
+
+function getZelty(params) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("Zelty");
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return jsonResponse({ rows: [] });
+  const rows = data.slice(1).map(function(row) {
+    return {
+      restaurant: row[0],
+      semaine: row[1],
+      proteine: row[2],
+      portions_sig: row[3],
+      portions_opt: row[4]
+    };
+  });
   return jsonResponse({ rows: rows });
 }
 
