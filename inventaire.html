@@ -248,7 +248,7 @@ function App() {
   const [invSem,  setInvSem]  = useState(getCurrentWeek);
   const weekScrollRef = useRef(null);
   const [invRest, setInvRest] = useState("Washington");
-  const [invMobileSection, setInvMobileSection] = useState("debut"); // debut | fin | transfert
+  const [invMobileSection, setInvMobileSection] = useState("fin"); // fin | transfert
   const [invMobileProtIdx, setInvMobileProtIdx] = useState(0);
 
   // Transfert form
@@ -398,21 +398,14 @@ function App() {
 
     const pp = params.proteines[protIdx] || params.proteines[0];
 
-    const sk = invSection === "debut"
-      ? (isManual ? debKey(invRest, invSem) : finKey(invRest, prevWeek(invSem) || ""))
-      : finKey(invRest, invSem);
-
-    const lines       = invSection === "debut"
-      ? getDebutLines(invRest, invSem, pp.name)
-      : getLines(sk, pp.name);
-    const skEditable  = invSection === "debut"
-      ? (isManual ? debKey(invRest, invSem) : null)
-      : finKey(invRest, invSem);
-    const isReadOnly  = invSection === "debut" ? (valDeb || !isManual) : valFin;
-    const accent      = invSection === "debut" ? (isManual ? "#e65100" : "#2e7d32") : "#1a237e";
-    const totalEquiv  = calcTotalFromLines(lines, pp.name, params);
-    const vk          = invSection === "debut" ? vkDeb : vkFin;
-    const isVal       = invSection === "debut" ? valDeb : valFin;
+    const sk         = finKey(invRest, invSem);
+    const lines      = invSection === "fin" ? getLines(sk, pp.name) : [];
+    const skEditable = invSection === "fin" ? finKey(invRest, invSem) : null;
+    const isReadOnly = valFin;
+    const accent     = "#1a237e";
+    const totalEquiv = calcTotalFromLines(lines, pp.name, params);
+    const vk         = vkFin;
+    const isVal      = valFin;
 
     return (
       <div style={{maxWidth:480, margin:"0 auto"}}>
@@ -472,46 +465,14 @@ function App() {
           ))}
         </div>
 
-        {/* ── DEBUT / FIN ── */}
+        {/* ── FIN ── */}
         {invSection !== "transfert" && (
           <div>
-            {/* Bannière statut */}
-            {invSection === "debut" && (
-              <div style={{marginBottom:12,padding:"10px 14px",borderRadius:10,
-                background:isManual?"#fff3e0":"#e8f5e9",
-                border:`1px solid ${isManual?"#ffe0b2":"#a5d6a7"}`,
-                fontSize:12,color:isManual?"#e65100":"#2e7d32",
-                display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span>{isManual ? "⚠ Saisie manuelle requise" : `✓ Repris depuis fin ${prev}`}</span>
-                {!isManual && !valDeb && (
-                  <button onClick={() => saveForce({...forceManual, [forceKey]: true})}
-                    style={{fontSize:11,padding:"3px 8px",background:"none",border:"1px solid currentColor",borderRadius:6,cursor:"pointer",color:"inherit"}}>
-                    Forcer
-                  </button>
-                )}
-                {isManual && forceManual[forceKey] && !valDeb && (
-                  <button onClick={() => { const f = {...forceManual}; delete f[forceKey]; saveForce(f); }}
-                    style={{fontSize:11,padding:"3px 8px",background:"none",border:"1px solid currentColor",borderRadius:6,cursor:"pointer",color:"inherit"}}>
-                    Auto
-                  </button>
-                )}
-              </div>
-            )}
-            {invSection === "fin" && next && (
-              <div style={{marginBottom:12,padding:"10px 14px",borderRadius:10,background:"#e3f2fd",border:"1px solid #bbdefb",fontSize:12,color:"#1565c0"}}>
-                ℹ Sera utilisé comme début de {next}
-              </div>
-            )}
 
             {/* Onglets protéines */}
             <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
               {params.proteines.map((p, i) => {
-                const tot = calcTotalFromLines(
-                  invSection === "debut"
-                    ? getDebutLines(invRest, invSem, p.name)
-                    : getLines(finKey(invRest, invSem), p.name),
-                  p.name, params
-                );
+                const tot = calcTotalFromLines(getLines(finKey(invRest, invSem), p.name), p.name, params);
                 return (
                   <button key={p.name} onClick={() => setProtIdx_(i)}
                     style={{flexShrink:0,padding:"8px 14px",borderRadius:14,border:"1px solid",
@@ -608,22 +569,14 @@ function App() {
                   </button>
                 </div>
               : <button onClick={() => {
-                    const any = params.proteines.some(p => {
-                      const ls = invSection === "debut"
-                        ? getDebutLines(invRest, invSem, p.name)
-                        : getLines(finKey(invRest, invSem), p.name);
-                      return ls.length > 0;
-                    });
+                    const any = params.proteines.some(p => getLines(finKey(invRest, invSem), p.name).length > 0);
                     if (!any) { alert("Ajoutez au moins une ligne avant de valider."); return; }
                     validate(vk);
-                    // Sync vers Sheets après validation
-                    const lignes = invSection === "debut"
-                      ? getDebutLines(invRest, invSem, pp.name)
-                      : getLines(finKey(invRest, invSem), pp.name);
-                    syncInventaireToSheets(invRest, invSem, pp.name, invSection, lignes, true);
+                    const lignes = getLines(finKey(invRest, invSem), pp.name);
+                    syncInventaireToSheets(invRest, invSem, pp.name, "fin", lignes, true);
                   }}
                   style={{width:"100%",padding:"16px",background:"#1a237e",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 12px rgba(26,35,126,.3)"}}>
-                  ✓ Valider l'inventaire {invSection === "debut" ? "début" : "fin"}
+                  ✓ Valider l'inventaire de fin
                 </button>
             }
           </div>
