@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ILIA · Inventaire</title>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ── Apps Script URL (vide pour l'instant) ─────────────────────────────────
+const APPS_SCRIPT_URL = "";
+
+// ── Storage shim (localStorage) ───────────────────────────────────────────
+window.storage = {
+  get: async (key) => { const v = localStorage.getItem(key); return v ? {value: v} : null; },
+  set: async (key, val) => { localStorage.setItem(key, val); },
+  delete: async (key) => { localStorage.removeItem(key); },
+};
+
+// ── Sync stub (à brancher plus tard sur Apps Script) ──────────────────────
+async function syncToSheets(restaurant, semaine, proteine, inv_debut, inv_fin) {
+  if (!APPS_SCRIPT_URL) return;
+  // TODO: implémenter l'envoi vers Apps Script
+  // try {
+  //   await fetch(APPS_SCRIPT_URL, { method: "POST", ... });
+  // } catch(e) { console.warn("syncToSheets error:", e); }
+}
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const RESTAURANTS = ["Washington","Mathurins","Casanova","Vernier","Riviere"];
+const WEEKS = ["S09","S10","S11","S12","S13","S14","S15","S16","S17","S18"];
+const DEFAULT_PARAMS = {
+  proteines: [
+    {name:"Saumon", grammage:100, coeff:0.667, etats:[
+      {name:"Cru filet",  coeff_cru:1.000},
+      {name:"Cru mariné", coeff_cru:1.000},
+      {name:"Cuit",       coeff_cru:1.499},
+    ]},
+    {name:"Thon", grammage:80, coeff:0.833, etats:[
+      {name:"Cru filet",  coeff_cru:1.000},
+      {name:"Cuit",       coeff_cru:1.200},
+    ]},
+    {name:"Bœuf", grammage:70, coeff:0.550, etats:[
+      {name:"Cru",        coeff_cru:1.000},
+      {name:"Cuit",       coeff_cru:1.818},
+    ]},
+    {name:"Poulet", grammage:130, coeff:0.625, etats:[
+      {name:"Cru",        coeff_cru:1.000},
+      {name:"Cru mariné", coeff_cru:1.000},
+      {name:"Cuit",       coeff_cru:1.600},
+    ]},
+  ],
+  bacs: [],
+};
+
+const SK = {
+  params:    "ilia_params",
+  inv:       "ilia_inv",
+  trans:     "ilia_trans",
+  validated: "ilia_validated",
+  force:     "ilia_force",
+};
+
+// ── PURE HELPERS ──────────────────────────────────────────────────────────
+const fmtN = (n, d=2) => (n == null || isNaN(n)) ? "—" : Number(n).toFixed(d);
+
+const prevWeek = sem => {
+  const idx = WEEKS.indexOf(sem);
+  if (idx > 0) return WEEKS[idx - 1];
+  const m = sem.match(/^S(\d+)$/);
+  return m ? `S${parseInt(m[1]) - 1}` : null;
+};
+
+const nextWeek = sem => {
+  const idx = WEEKS.indexOf(sem);
+  if (idx >= 0 && idx < WEEKS.length - 1) return WEEKS[idx + 1];
+  const m = sem.match(/^S(\d+)$/);
+  return m ? `S${parseInt(m[1]) + 1}` : null;
+};
+
+const getCoeffCruPure = (params, protName, etatName) => {
+  const pp = params.proteines.find(p => p.name === protName);
+  if (!pp) return 1;
+  const e = pp.etats.find(e => e.name === etatName);
+  return e ? e.coeff_cru : 1;
+};
+
+const calcEquivCru = (poids_brut, tare, coeff_cru) =>
+  Math.max(0, (poids_brut || 0) - (tare || 0)) * coeff_cru;
+
+const calcTotalFromLines = (lines, protName, params) =>
+  (lines || []).reduce(
+    (s, l) => s + calcEquivCru(l.poids_brut, l.tare, getCoeffCruPure(params, protName, l.etat)),
+    0
+  );
+
+// ── NUM INPUT (module level — stable reference, pas de focus loss) ─────────
+function NumInput({value, onChange, placeholder="0"}) {
+  const [local, setLocal] = useState(String(value ?? ""));
+  useEffect(() => { setLocal(String(value ?? "")); }, [value]);
+  return (
+    <input
+      type="number"
+      inputMode="decimal"
+      value={local}
+      placeholder={placeholder}
+      onChange={e => { setLocal(e.target.value); onChange(e.target.value); }}
+      style={{
+        width: "100%", padding: "12px", border: "1px solid #ddd",
+        borderRadius: 8, fontSize: 18, textAlign: "center",
+        background: "#fffde7", boxSizing: "border-box"
+      }}
+    />
+  );
+}
+
+// ── INV BLOCK (module level — stable reference) ───────────────────────────
+function InvBlock({lines, pp, params, readOnly, colorAccent, isValidatedBlock, onAdd, onUpdate, onDel}) {
+  const total_equiv = calcTotalFromLines(lines, pp.name, params);
+  return (
+    <div style={{background:"#fafaf8",borderRadius:10,border:`1px solid ${isValidatedBlock?"#a5d6a7":"#eee"}`,overflow:"hidden"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 14px",background:isValidatedBlock?"#2e7d32":colorAccent}}>
+        <span style={{fontWeight:700,fontSize:13,color:"#fff"}}>{pp.name}</span>
+        <span style={{fontSize:12,color:"rgba(255,255,255,0.75)"}}>
+          Équiv. cru net : <strong style={{color:"#fff"}}>{fmtN(total_equiv,3)} kg</strong>
+        </span>
+      </div>
+      <div style={{padding:"10px 14px"}}>
+        {lines.length > 0 && (
+          <div style={{display:"grid",gridTemplateColumns:"1fr 80px 80px 80px 80px 24px",gap:6,marginBottom:6}}>
+            {["État","Poids brut","Tare","Poids net","Équiv. cru net",""].map((h, i) => (
+              <div key={i} style={{fontSize:9,color:"#aaa",fontWeight:600,textAlign:i>0?"center":"left",textTransform:"uppercase"}}>{h}</div>
+            ))}
+          </div>
+        )}
+        {lines.map((l, idx) => {
+          const net   = Math.max(0, (l.poids_brut||0) - (l.tare||0));
+          const equiv = calcEquivCru(l.poids_brut, l.tare, getCoeffCruPure(params, pp.name, l.etat));
+          return (
+            <div key={idx} style={{display:"grid",gridTemplateColumns:"1fr 80px 80px 80px 80px 24px",gap:6,marginBottom:6,alignItems:"center"}}>
+              {readOnly
+                ? <span style={{fontSize:11,color:"#555",fontWeight:500}}>{l.etat||"—"}</span>
+                : <select value={l.etat} onChange={e => onUpdate(idx,"etat",e.target.value)}
+                    style={{padding:"4px 5px",borderRadius:4,border:"1px solid #ddd",fontSize:11,background:"#fffde7"}}>
+                    <option value="">— État —</option>
+                    {pp.etats.map(e => <option key={e.name}>{e.name}</option>)}
+                  </select>
+              }
+              {readOnly
+                ? <div style={{textAlign:"center",fontSize:11,color:"#555"}}>{fmtN(l.poids_brut,3)}</div>
+                : <NumInput value={l.poids_brut} onChange={v => onUpdate(idx,"poids_brut",v)}/>
+              }
+              {readOnly
+                ? <div style={{textAlign:"center",fontSize:11,color:"#555"}}>{fmtN(l.tare,3)}</div>
+                : <NumInput value={l.tare} onChange={v => onUpdate(idx,"tare",v)}/>
+              }
+              <div style={{textAlign:"center",fontSize:11,fontWeight:600,color:"#555"}}>{fmtN(net,3)}</div>
+              <div style={{textAlign:"center",fontSize:11,fontWeight:700,color:isValidatedBlock?"#2e7d32":colorAccent}}>{fmtN(equiv,3)}</div>
+              {readOnly
+                ? <div/>
+                : <button onClick={() => onDel(idx)} style={{background:"none",border:"none",cursor:"pointer",color:"#dc2626",fontSize:13,padding:0}}>✕</button>
+              }
+            </div>
+          );
+        })}
+        {!readOnly && (
+          <button onClick={onAdd} style={{fontSize:11,padding:"4px 12px",background:"#e8eaf6",color:colorAccent,border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,marginTop:4}}>
+            + Ajouter ligne
+          </button>
+        )}
+      </div>
+      {lines.length > 0 && (
+        <div style={{padding:"7px 14px",background:"rgba(0,0,0,0.04)",display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
+          <span style={{fontSize:11,color:"#666"}}>Total équiv. cru net</span>
+          <span style={{fontSize:14,fontWeight:700,color:isValidatedBlock?"#2e7d32":colorAccent}}>{fmtN(total_equiv,3)} kg</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// APP
+// ════════════════════════════════════════════════════════════════════════════
+function App() {
+  const [params,      setParams]      = useState(DEFAULT_PARAMS);
+  const [invData,     setInvData]     = useState({});
+  const [transfers,   setTransfers]   = useState([]);
+  const [validated,   setValidated]   = useState({});
+  const [forceManual, setForceManual] = useState({});
+  const [isLoaded,    setIsLoaded]    = useState(false);
+  const [saved,       setSaved]       = useState(false);
+
+  // Inventaire UI
+  const [invSem,  setInvSem]  = useState("S16");
+  const [invRest, setInvRest] = useState("Washington");
+  const [invMobileSection, setInvMobileSection] = useState("debut"); // debut | fin | transfert
+  const [invMobileProtIdx, setInvMobileProtIdx] = useState(0);
+
+  // Transfert form
+  const [transForm, setTransForm] = useState({
+    to: RESTAURANTS[1],
+    prot: DEFAULT_PARAMS.proteines[0]?.name || "",
+    etat: "",
+    poids_brut: "",
+    tare: "",
+    note: ""
+  });
+  const [showTrans, setShowTrans] = useState(false);
+
+  // ── Chargement depuis localStorage ──────────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      const load = async (key, setter, fallback) => {
+        try {
+          const r = await window.storage.get(key);
+          if (r && r.value) setter(JSON.parse(r.value));
+          else if (fallback !== undefined) setter(fallback);
+        } catch {
+          if (fallback !== undefined) setter(fallback);
+        }
+      };
+      await Promise.all([
+        load(SK.params,    setParams,      DEFAULT_PARAMS),
+        load(SK.inv,       setInvData,     {}),
+        load(SK.trans,     setTransfers,   []),
+        load(SK.validated, setValidated,   {}),
+        load(SK.force,     setForceManual, {}),
+      ]);
+      setIsLoaded(true);
+    })();
+  }, []);
+
+  // ── Persistance ──────────────────────────────────────────────────────────
+  const persist = useCallback(async (key, val) => {
+    try {
+      await window.storage.set(key, JSON.stringify(val));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    } catch(e) {
+      console.error("Storage error:", e);
+    }
+  }, []);
+
+  const saveParams    = d => { setParams(d);      persist(SK.params,    d); };
+  const saveInv       = d => { setInvData(d);     persist(SK.inv,       d); };
+  const saveTrans     = d => { setTransfers(d);   persist(SK.trans,     d); };
+  const saveValidated = d => { setValidated(d);   persist(SK.validated, d); };
+  const saveForce     = d => { setForceManual(d); persist(SK.force,     d); };
+
+  // ── Clés inventaire ──────────────────────────────────────────────────────
+  const finKey    = (rest, sem) => `invfin__${rest}__${sem}`;
+  const debKey    = (rest, sem) => `invdeb__${rest}__${sem}`;
+  const valKeyDeb = (rest, sem) => `deb__${rest}__${sem}`;
+  const valKeyFin = (rest, sem) => `fin__${rest}__${sem}`;
+
+  const getLines   = (sk, prot) => (invData[sk]?.[prot]?.lines) || [];
+  const setLines   = (sk, prot, lines) =>
+    saveInv({...invData, [sk]: {...(invData[sk]||{}), [prot]: {lines}}});
+
+  const addLine2    = (sk, prot) =>
+    setLines(sk, prot, [...getLines(sk, prot), {etat:"", poids_brut:0, tare:0}]);
+
+  const delLine2    = (sk, prot, idx) => {
+    const l = [...getLines(sk, prot)];
+    l.splice(idx, 1);
+    setLines(sk, prot, l);
+  };
+
+  const updateLine2 = (sk, prot, idx, f, v) => {
+    const l = [...getLines(sk, prot)];
+    if (!l[idx]) l[idx] = {etat:"", poids_brut:0, tare:0};
+    l[idx] = {...l[idx], [f]: f === "etat" ? v : (parseFloat(v) || 0)};
+    setLines(sk, prot, l);
+  };
+
+  const prevHasFin  = (rest, sem) => {
+    const prev = prevWeek(sem);
+    if (!prev) return false;
+    return params.proteines.some(pp => getLines(finKey(rest, prev), pp.name).length > 0);
+  };
+  const isManualDeb = (rest, sem) => forceManual[`${rest}__${sem}`] || !prevHasFin(rest, sem);
+
+  const getDebutLines = (rest, sem, prot) => {
+    if (isManualDeb(rest, sem)) return getLines(debKey(rest, sem), prot);
+    const prev = prevWeek(sem);
+    return getLines(finKey(rest, prev || ""), prot);
+  };
+  const getDebutTotal = (rest, sem, prot) =>
+    calcTotalFromLines(getDebutLines(rest, sem, prot), prot, params);
+  const getFinTotal   = (rest, sem, prot) =>
+    calcTotalFromLines(getLines(finKey(rest, sem), prot), prot, params);
+
+  const isValidated = key => !!validated[key];
+  const validate    = key => saveValidated({...validated, [key]: true});
+  const unvalidate  = key => { const v = {...validated}; delete v[key]; saveValidated(v); };
+
+  // ── Transferts ───────────────────────────────────────────────────────────
+  const addTransfer = (from, to, sem, prot, etat, poids_brut, tare, note) => {
+    const qty_net = calcEquivCru(
+      parseFloat(poids_brut) || 0,
+      parseFloat(tare) || 0,
+      getCoeffCruPure(params, prot, etat)
+    );
+    saveTrans([...transfers, {
+      id: Date.now(), from, to, sem, prot, etat,
+      poids_brut: parseFloat(poids_brut) || 0,
+      tare: parseFloat(tare) || 0,
+      qty_net,
+      note: note || "",
+      date: new Date().toLocaleDateString("fr-FR")
+    }]);
+  };
+
+  const delTransfer = id => saveTrans(transfers.filter(t => t.id !== id));
+
+  const getTransferNet = (rest, sem, prot) => {
+    const out = transfers.filter(t => t.from === rest && t.sem === sem && t.prot === prot)
+                         .reduce((s, t) => s + t.qty_net, 0);
+    const inn = transfers.filter(t => t.to === rest && t.sem === sem && t.prot === prot)
+                         .reduce((s, t) => s + t.qty_net, 0);
+    return inn - out;
+  };
+
+  // ════════════════════════════════════════════════════════════════════════
+  // INVENTAIRE VIEW
+  // ════════════════════════════════════════════════════════════════════════
+  const renderInventaire = () => {
+    const prev     = prevWeek(invSem);
+    const next     = nextWeek(invSem);
+    const isManual = isManualDeb(invRest, invSem);
+    const forceKey = `${invRest}__${invSem}`;
+    const vkDeb    = valKeyDeb(invRest, invSem);
+    const vkFin    = valKeyFin(invRest, invSem);
+    const valDeb   = isValidated(vkDeb);
+    const valFin   = isValidated(vkFin);
+
+    const invSection  = invMobileSection;
+    const setInvSection_ = setInvMobileSection;
+    const protIdx    = invMobileProtIdx;
+    const setProtIdx_ = setInvMobileProtIdx;
+
+    const pp = params.proteines[protIdx] || params.proteines[0];
+
+    const sk = invSection === "debut"
+      ? (isManual ? debKey(invRest, invSem) : finKey(invRest, prevWeek(invSem) || ""))
+      : finKey(invRest, invSem);
+
+    const lines       = invSection === "debut"
+      ? getDebutLines(invRest, invSem, pp.name)
+      : getLines(sk, pp.name);
+    const skEditable  = invSection === "debut"
+      ? (isManual ? debKey(invRest, invSem) : null)
+      : finKey(invRest, invSem);
+    const isReadOnly  = invSection === "debut" ? (valDeb || !isManual) : valFin;
+    const accent      = invSection === "debut" ? (isManual ? "#e65100" : "#2e7d32") : "#1a237e";
+    const totalEquiv  = calcTotalFromLines(lines, pp.name, params);
+    const vk          = invSection === "debut" ? vkDeb : vkFin;
+    const isVal       = invSection === "debut" ? valDeb : valFin;
+
+    return (
+      <div style={{maxWidth:480, margin:"0 auto"}}>
+
+        {/* ── Semaine ── */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>
+            Semaine
+          </div>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+            {WEEKS.map(w => (
+              <button key={w} onClick={() => setInvSem(w)}
+                style={{flexShrink:0,fontSize:13,padding:"8px 14px",borderRadius:20,border:"1px solid",
+                  borderColor:invSem===w?"#1a237e":"#e0e0e0",
+                  background:invSem===w?"#1a237e":"#fff",
+                  color:invSem===w?"#fff":"#555",
+                  cursor:"pointer",fontWeight:invSem===w?700:400}}>
+                {w}
+              </button>
+            ))}
+            <input value={invSem} onChange={e => setInvSem(e.target.value)} placeholder="S00"
+              style={{flexShrink:0,width:52,padding:"8px 6px",borderRadius:20,border:"1px solid #ddd",fontSize:13,textAlign:"center"}}/>
+          </div>
+        </div>
+
+        {/* ── Restaurant ── */}
+        <div style={{marginBottom:18}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>
+            Restaurant
+          </div>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+            {RESTAURANTS.map(r => (
+              <button key={r} onClick={() => setInvRest(r)}
+                style={{flexShrink:0,fontSize:13,padding:"8px 16px",borderRadius:20,border:"1px solid",
+                  borderColor:invRest===r?"#1a237e":"#e0e0e0",
+                  background:invRest===r?"#1a237e":"#fff",
+                  color:invRest===r?"#fff":"#555",
+                  cursor:"pointer",fontWeight:invRest===r?700:400}}>
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Section tabs ── */}
+        <div style={{display:"flex",gap:4,marginBottom:16}}>
+          {[["debut","Début"],["fin","Fin"],["transfert","Transferts"]].map(([v, l]) => (
+            <button key={v} onClick={() => setInvSection_(v)}
+              style={{flex:1,padding:"10px 0",fontSize:13,
+                fontWeight:invSection===v?700:400,
+                background:invSection===v?"#1a237e":"#f0f0ee",
+                color:invSection===v?"#fff":"#666",
+                border:"none",borderRadius:10,cursor:"pointer",transition:"all .15s"}}>
+              {l}
+              {v==="debut" && valDeb && " ✓"}
+              {v==="fin"   && valFin && " ✓"}
+            </button>
+          ))}
+        </div>
+
+        {/* ── DEBUT / FIN ── */}
+        {invSection !== "transfert" && (
+          <div>
+            {/* Bannière statut */}
+            {invSection === "debut" && (
+              <div style={{marginBottom:12,padding:"10px 14px",borderRadius:10,
+                background:isManual?"#fff3e0":"#e8f5e9",
+                border:`1px solid ${isManual?"#ffe0b2":"#a5d6a7"}`,
+                fontSize:12,color:isManual?"#e65100":"#2e7d32",
+                display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span>{isManual ? "⚠ Saisie manuelle requise" : `✓ Repris depuis fin ${prev}`}</span>
+                {!isManual && !valDeb && (
+                  <button onClick={() => saveForce({...forceManual, [forceKey]: true})}
+                    style={{fontSize:11,padding:"3px 8px",background:"none",border:"1px solid currentColor",borderRadius:6,cursor:"pointer",color:"inherit"}}>
+                    Forcer
+                  </button>
+                )}
+                {isManual && forceManual[forceKey] && !valDeb && (
+                  <button onClick={() => { const f = {...forceManual}; delete f[forceKey]; saveForce(f); }}
+                    style={{fontSize:11,padding:"3px 8px",background:"none",border:"1px solid currentColor",borderRadius:6,cursor:"pointer",color:"inherit"}}>
+                    Auto
+                  </button>
+                )}
+              </div>
+            )}
+            {invSection === "fin" && next && (
+              <div style={{marginBottom:12,padding:"10px 14px",borderRadius:10,background:"#e3f2fd",border:"1px solid #bbdefb",fontSize:12,color:"#1565c0"}}>
+                ℹ Sera utilisé comme début de {next}
+              </div>
+            )}
+
+            {/* Onglets protéines */}
+            <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
+              {params.proteines.map((p, i) => {
+                const tot = calcTotalFromLines(
+                  invSection === "debut"
+                    ? getDebutLines(invRest, invSem, p.name)
+                    : getLines(finKey(invRest, invSem), p.name),
+                  p.name, params
+                );
+                return (
+                  <button key={p.name} onClick={() => setProtIdx_(i)}
+                    style={{flexShrink:0,padding:"8px 14px",borderRadius:14,border:"1px solid",
+                      borderColor:protIdx===i?accent:"#e0e0e0",
+                      background:protIdx===i?accent:"#fff",
+                      color:protIdx===i?"#fff":"#555",
+                      cursor:"pointer",fontSize:13,fontWeight:protIdx===i?700:400}}>
+                    {p.name}
+                    {tot > 0 && <span style={{marginLeft:5,fontSize:11,opacity:.85}}>{fmtN(tot,2)} kg</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* En-tête carte protéine */}
+            <div style={{background:isVal?"#2e7d32":accent,borderRadius:"12px 12px 0 0",padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontWeight:700,fontSize:16,color:"#fff"}}>{pp.name}</span>
+              <span style={{fontSize:13,color:"rgba(255,255,255,0.8)"}}>
+                ≡ <strong style={{color:"#fff"}}>{fmtN(totalEquiv,3)} kg</strong> cru net
+              </span>
+            </div>
+
+            {/* Lignes de pesée */}
+            <div style={{background:"#fafaf8",border:"1px solid #eee",borderTop:"none",borderRadius:"0 0 12px 12px",padding:"12px",marginBottom:12}}>
+              {lines.length === 0 && (
+                <div style={{textAlign:"center",padding:"20px 0",color:"#bbb",fontSize:13}}>
+                  Aucune ligne — appuyez sur + pour ajouter
+                </div>
+              )}
+              {lines.map((l, idx) => {
+                const net   = Math.max(0, (l.poids_brut||0) - (l.tare||0));
+                const equiv = calcEquivCru(l.poids_brut, l.tare, getCoeffCruPure(params, pp.name, l.etat));
+                return (
+                  <div key={idx} style={{background:"#fff",borderRadius:10,border:"1px solid #eee",padding:"12px",marginBottom:8}}>
+                    {/* État */}
+                    {isReadOnly
+                      ? <div style={{fontSize:13,fontWeight:600,color:"#333",marginBottom:8}}>{l.etat || "—"}</div>
+                      : <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+                          {pp.etats.map(e => (
+                            <button key={e.name}
+                              onClick={() => skEditable && updateLine2(skEditable, pp.name, idx, "etat", e.name)}
+                              style={{padding:"7px 14px",borderRadius:20,border:"1px solid",fontSize:13,
+                                borderColor:l.etat===e.name?accent:"#ddd",
+                                background:l.etat===e.name?accent:"#fff",
+                                color:l.etat===e.name?"#fff":"#555",
+                                cursor:"pointer",fontWeight:l.etat===e.name?600:400}}>
+                              {e.name}
+                            </button>
+                          ))}
+                        </div>
+                    }
+                    {/* Poids brut / Tare */}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:8}}>
+                      {[["Poids brut (kg)","poids_brut",l.poids_brut],["Tare (kg)","tare",l.tare]].map(([lbl,field,val]) => (
+                        <div key={field}>
+                          <div style={{fontSize:11,color:"#999",marginBottom:4}}>{lbl}</div>
+                          {isReadOnly
+                            ? <div style={{fontSize:16,fontWeight:600,color:"#333",padding:"10px 0"}}>{fmtN(val,3)}</div>
+                            : <NumInput value={val} onChange={v => skEditable && updateLine2(skEditable, pp.name, idx, field, v)}/>
+                          }
+                        </div>
+                      ))}
+                    </div>
+                    {/* Résultat */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",background:"#f5f5f5",borderRadius:8}}>
+                      <span style={{fontSize:12,color:"#888"}}>Net : <strong style={{color:"#333"}}>{fmtN(net,3)} kg</strong></span>
+                      <span style={{fontSize:13,fontWeight:700,color:isVal?"#2e7d32":accent}}>≡ {fmtN(equiv,3)} kg cru net</span>
+                    </div>
+                    {!isReadOnly && (
+                      <button
+                        onClick={() => skEditable && delLine2(skEditable, pp.name, idx)}
+                        style={{width:"100%",marginTop:8,padding:"8px",background:"#ffebee",color:"#c62828",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontWeight:600}}>
+                        Supprimer cette ligne
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+              {!isReadOnly && (
+                <button onClick={() => skEditable && addLine2(skEditable, pp.name)}
+                  style={{width:"100%",padding:"14px",background:"#e8eaf6",color:"#1a237e",border:"2px dashed #9fa8da",borderRadius:10,fontSize:14,cursor:"pointer",fontWeight:600,marginTop:4}}>
+                  + Ajouter une ligne
+                </button>
+              )}
+            </div>
+
+            {/* Validation */}
+            {isVal
+              ? <div style={{display:"flex",gap:8,alignItems:"center",justifyContent:"space-between",padding:"12px 16px",background:"#e8f5e9",borderRadius:12,border:"1px solid #a5d6a7"}}>
+                  <span style={{fontSize:14,fontWeight:700,color:"#2e7d32"}}>✓ Inventaire validé</span>
+                  <button onClick={() => unvalidate(vk)}
+                    style={{padding:"8px 16px",background:"#fff",color:"#666",border:"1px solid #ddd",borderRadius:8,fontSize:13,cursor:"pointer"}}>
+                    Modifier
+                  </button>
+                </div>
+              : <button onClick={() => {
+                    const any = params.proteines.some(p => {
+                      const ls = invSection === "debut"
+                        ? getDebutLines(invRest, invSem, p.name)
+                        : getLines(finKey(invRest, invSem), p.name);
+                      return ls.length > 0;
+                    });
+                    if (!any) { alert("Ajoutez au moins une ligne avant de valider."); return; }
+                    validate(vk);
+                    // Sync vers Sheets après validation
+                    params.proteines.forEach(p => {
+                      syncToSheets(
+                        invRest, invSem, p.name,
+                        getDebutTotal(invRest, invSem, p.name),
+                        getFinTotal(invRest, invSem, p.name)
+                      );
+                    });
+                  }}
+                  style={{width:"100%",padding:"16px",background:"#1a237e",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 12px rgba(26,35,126,.3)"}}>
+                  ✓ Valider l'inventaire {invSection === "debut" ? "début" : "fin"}
+                </button>
+            }
+          </div>
+        )}
+
+        {/* ── TRANSFERTS ── */}
+        {invSection === "transfert" && (
+          <div>
+            <button onClick={() => setShowTrans(!showTrans)}
+              style={{width:"100%",padding:"14px",background:showTrans?"#f5f5f5":"#fff3e0",color:"#e65100",border:"1px solid #ffe0b2",borderRadius:12,fontSize:14,cursor:"pointer",fontWeight:600,marginBottom:12}}>
+              {showTrans ? "Annuler" : "+ Nouveau transfert"}
+            </button>
+
+            {showTrans && (
+              <div style={{background:"#fff8f0",border:"1px solid #ffe0b2",borderRadius:12,padding:16,marginBottom:16}}>
+                {/* Vers */}
+                <div style={{marginBottom:12}}>
+                  <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Vers</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {RESTAURANTS.filter(r => r !== invRest).map(r => (
+                      <button key={r} onClick={() => setTransForm(f => ({...f, to: r}))}
+                        style={{padding:"9px 16px",borderRadius:20,border:"1px solid",fontSize:13,
+                          borderColor:transForm.to===r?"#e65100":"#ddd",
+                          background:transForm.to===r?"#e65100":"#fff",
+                          color:transForm.to===r?"#fff":"#555",
+                          cursor:"pointer",fontWeight:transForm.to===r?600:400}}>
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Protéine */}
+                <div style={{marginBottom:12}}>
+                  <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Protéine</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {params.proteines.map(p => (
+                      <button key={p.name} onClick={() => setTransForm(f => ({...f, prot: p.name, etat: ""}))}
+                        style={{padding:"9px 16px",borderRadius:20,border:"1px solid",fontSize:13,
+                          borderColor:transForm.prot===p.name?"#e65100":"#ddd",
+                          background:transForm.prot===p.name?"#e65100":"#fff",
+                          color:transForm.prot===p.name?"#fff":"#555",
+                          cursor:"pointer",fontWeight:transForm.prot===p.name?600:400}}>
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* État */}
+                <div style={{marginBottom:12}}>
+                  <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>État</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {(params.proteines.find(p => p.name === transForm.prot)?.etats || []).map(e => (
+                      <button key={e.name} onClick={() => setTransForm(f => ({...f, etat: e.name}))}
+                        style={{padding:"9px 16px",borderRadius:20,border:"1px solid",fontSize:13,
+                          borderColor:transForm.etat===e.name?"#e65100":"#ddd",
+                          background:transForm.etat===e.name?"#e65100":"#fff",
+                          color:transForm.etat===e.name?"#fff":"#555",
+                          cursor:"pointer",fontWeight:transForm.etat===e.name?600:400}}>
+                        {e.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Poids */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                  {[["Poids brut (kg)","poids_brut"],["Tare (kg)","tare"]].map(([lbl, f]) => (
+                    <div key={f}>
+                      <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>{lbl}</div>
+                      <input inputMode="decimal" value={transForm[f]}
+                        onChange={e => setTransForm(tf => ({...tf, [f]: e.target.value}))}
+                        placeholder="0.00"
+                        style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:16,textAlign:"center",background:"#fffde7",boxSizing:"border-box"}}/>
+                    </div>
+                  ))}
+                </div>
+                {/* Note */}
+                <div style={{marginBottom:14}}>
+                  <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Note (optionnel)</div>
+                  <input value={transForm.note} onChange={e => setTransForm(f => ({...f, note: e.target.value}))}
+                    placeholder="Ex: surplus semaine"
+                    style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:14,boxSizing:"border-box"}}/>
+                </div>
+                {/* Aperçu équiv. cru */}
+                {transForm.poids_brut && transForm.etat && (
+                  <div style={{padding:"10px 14px",background:"#e8f5e9",borderRadius:8,marginBottom:12,fontSize:13,color:"#2e7d32",fontWeight:600,textAlign:"center"}}>
+                    ≡ {fmtN(calcEquivCru(parseFloat(transForm.poids_brut)||0, parseFloat(transForm.tare)||0, getCoeffCruPure(params, transForm.prot, transForm.etat)), 3)} kg cru net
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (!transForm.poids_brut || !transForm.etat) return;
+                    addTransfer(invRest, transForm.to, invSem, transForm.prot, transForm.etat, transForm.poids_brut, transForm.tare, transForm.note);
+                    setTransForm(f => ({...f, etat:"", poids_brut:"", tare:"", note:""}));
+                    setShowTrans(false);
+                  }}
+                  style={{width:"100%",padding:"16px",background:"#e65100",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer"}}>
+                  Valider le transfert
+                </button>
+              </div>
+            )}
+
+            {transfers.filter(t => (t.from === invRest || t.to === invRest) && t.sem === invSem).length === 0
+              ? <div style={{textAlign:"center",padding:"24px 0",color:"#bbb",fontSize:13}}>Aucun transfert cette semaine</div>
+              : <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {transfers
+                    .filter(t => (t.from === invRest || t.to === invRest) && t.sem === invSem)
+                    .map(t => {
+                      const isOut = t.from === invRest;
+                      return (
+                        <div key={t.id} style={{background:isOut?"#ffebee":"#e8f5e9",borderRadius:10,padding:"12px 14px",fontSize:13}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                            <span style={{fontWeight:700,color:isOut?"#c62828":"#2e7d32"}}>
+                              {isOut ? "↗ Sortie" : "↙ Entrée"} — {t.prot}
+                            </span>
+                            <button onClick={() => delTransfer(t.id)}
+                              style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",fontSize:16,padding:"0 4px"}}>
+                              ✕
+                            </button>
+                          </div>
+                          <div style={{color:"#555",marginBottom:2}}>
+                            <span style={{background:"rgba(0,0,0,0.08)",padding:"2px 7px",borderRadius:4,fontSize:12}}>{t.etat}</span>
+                            {" "}{isOut ? `→ ${t.to}` : `← ${t.from}`}
+                          </div>
+                          <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+                            <span style={{color:"#888",fontSize:12}}>{fmtN(t.poids_brut,3)} kg brut</span>
+                            <span style={{fontWeight:700}}>= {fmtN(t.qty_net,3)} kg cru net</span>
+                          </div>
+                          {t.note && <div style={{fontSize:12,color:"#999",marginTop:4,fontStyle:"italic"}}>{t.note}</div>}
+                        </div>
+                      );
+                    })
+                  }
+                </div>
+            }
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── LOADING ───────────────────────────────────────────────────────────────
+  if (!isLoaded) return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",gap:12}}>
+      <div style={{width:32,height:32,border:"3px solid #e0e0e0",borderTop:"3px solid #1a237e",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div style={{fontSize:12,color:"#888"}}>Chargement…</div>
+    </div>
+  );
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
+  return (
+    <div style={{fontFamily:"system-ui,sans-serif",color:"#111",minHeight:"100vh",background:"#f5f5f3"}}>
+      {/* CSS global */}
+      <style>{`
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+        input[type=number] { -moz-appearance:textfield; appearance:textfield; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        button:active { opacity: 0.85; }
+      `}</style>
+
+      {/* Header */}
+      <div style={{background:"#1a237e",padding:"14px 16px 12px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:10,boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+        <div>
+          <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",color:"rgba(255,255,255,0.5)",textTransform:"uppercase",marginBottom:1}}>
+            ILIA
+          </div>
+          <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>Inventaire</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {saved
+            ? <span style={{fontSize:12,color:"#a5d6a7",fontWeight:600}}>✓ Sauvegardé</span>
+            : <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>Auto-save</span>
+          }
+        </div>
+      </div>
+
+      {/* Contenu */}
+      <div style={{padding:"16px 12px 40px"}}>
+        {renderInventaire()}
+      </div>
+
+      <div style={{textAlign:"center",fontSize:10,color:"#ccc",paddingBottom:16}}>
+        ILIA Groupe © 2026
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
