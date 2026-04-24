@@ -429,7 +429,12 @@ function App() {
   const prevHasFin=(rest,sem)=>{ const prev=prevWeek(sem); if(!prev) return false; return params.proteines.some(pp=>getLines(finKey(rest,prev),pp.name).length>0); };
   const isManualDeb=(rest,sem)=>forceManual[`${rest}__${sem}`]||!prevHasFin(rest,sem);
   const getDebutLines=(rest,sem,prot)=>{ if(isManualDeb(rest,sem)) return getLines(debKey(rest,sem),prot); const prev=prevWeek(sem); return getLines(finKey(rest,prev||""),prot); };
-  const getDebutTotal=(rest,sem,prot)=>calcTotalFromLines(getDebutLines(rest,sem,prot),prot,params);
+  // Transferts entrants de la semaine précédente → s'ajoutent au début de cette semaine
+  const getTransfersInFromPrevWeek=(rest,sem,prot)=>{
+    const prev=prevWeek(sem); if(!prev) return 0;
+    return transfers.filter(t=>t.to===rest&&t.sem===prev&&t.prot===prot).reduce((s,t)=>s+t.qty_net,0);
+  };
+  const getDebutTotal=(rest,sem,prot)=>calcTotalFromLines(getDebutLines(rest,sem,prot),prot,params)+getTransfersInFromPrevWeek(rest,sem,prot);
   const getFinTotal  =(rest,sem,prot)=>calcTotalFromLines(getLines(finKey(rest,sem),prot),prot,params);
 
   const isValidated  =key=>!!validated[key];
