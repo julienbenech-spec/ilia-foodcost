@@ -27,16 +27,12 @@ window.storage = {
   delete: async (key) => { localStorage.removeItem(key); },
 };
 
-// ── Sync vers Google Sheets via Apps Script ───────────────────────────────
+// ── Sync vers Google Sheets via Apps Script (GET + param data) ───────────
 async function syncToSheets(payload) {
   if (!APPS_SCRIPT_URL) return;
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify(payload),
-    });
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    await fetch(`${APPS_SCRIPT_URL}?data=${encoded}`, { mode: "no-cors" });
   } catch(e) { console.warn("syncToSheets error:", e); }
 }
 
