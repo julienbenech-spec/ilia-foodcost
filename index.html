@@ -41,6 +41,60 @@ window.storage = {
   delete: async (key) => { localStorage.removeItem(key); },
 };
 
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeCLFr0A_Pxhgnbr6sUZxl8MQdDxXJbugUsvHJBAW0988bUz_EYXGvFaw3c7sgkskyQA/exec";
+
+const sheetsRowsToInvData = (rows) => {
+  const invData = {};
+  rows.forEach(row => {
+    const key = `inv${row.type}__${row.restaurant}__${row.semaine}`;
+    if (!invData[key]) invData[key] = {};
+    if (!invData[key][row.proteine]) invData[key][row.proteine] = {lines: []};
+    if (row.etat || row.poids_brut) {
+      invData[key][row.proteine].lines.push({
+        etat: row.etat || "",
+        poids_brut: parseFloat(row.poids_brut) || 0,
+        tare: parseFloat(row.tare) || 0
+      });
+    }
+  });
+  return invData;
+};
+
+const sheetsRowsToTransfers = (rows) => rows.map((row, i) => ({
+  id: row.timestamp ? new Date(row.timestamp).getTime() : Date.now() + i,
+  from: row.from, to: row.to, sem: row.semaine, prot: row.prot,
+  etat: row.etat, poids_brut: parseFloat(row.poids_brut) || 0,
+  tare: parseFloat(row.tare) || 0, qty_net: parseFloat(row.qty_net) || 0,
+  note: row.note || "", date: row.date || ""
+}));
+
+const loadFromSheets = async (currentInvData, currentTransfers) => {
+  try {
+    const [invResp, transResp] = await Promise.all([
+      fetch(`${APPS_SCRIPT_URL}?action=getInventaire`),
+      fetch(`${APPS_SCRIPT_URL}?action=getTransferts`)
+    ]);
+    const invJson = await invResp.json();
+    const transJson = await transResp.json();
+    const sheetsInv = sheetsRowsToInvData(invJson.rows || []);
+    const sheetsTrans = sheetsRowsToTransfers(transJson.rows || []);
+    // Merge: start from localStorage, then overlay Sheets data (Sheets has priority)
+    const mergedInv = {...(currentInvData || {})};
+    Object.entries(sheetsInv).forEach(([key, prots]) => {
+      mergedInv[key] = {...(mergedInv[key] || {})};
+      Object.entries(prots).forEach(([prot, data]) => {
+        mergedInv[key][prot] = data; // Sheets overrides
+      });
+    });
+    // For transfers: if Sheets returned data, use Sheets; otherwise keep localStorage
+    const mergedTrans = sheetsTrans.length > 0 ? sheetsTrans : (currentTransfers || []);
+    return {invData: mergedInv, transfers: mergedTrans, ok: true};
+  } catch(e) {
+    console.warn("loadFromSheets failed, using localStorage only:", e);
+    return {invData: currentInvData, transfers: currentTransfers, ok: false};
+  }
+};
+
 
 
 // ── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -241,6 +295,7 @@ function App() {
   const [forceManual,setForceManual]=useState({});
   const [isLoaded,  setIsLoaded]  = useState(false);
   const [saved,     setSaved]     = useState(false);
+  const [syncStatus, setSyncStatus] = useState("idle"); // "idle"|"loading"|"ok"|"error"
   const [mode,      setMode]      = useState("achats");
 
   // Achats UI
@@ -262,6 +317,24 @@ function App() {
   const [invMobileSection, setInvMobileSection] = useState("debut"); // debut | fin | transfert
   const [invMobileProtIdx, setInvMobileProtIdx] = useState(0);
 
+  // ── Sync from Sheets (callable manually) ──
+  const syncFromSheets = useCallback(async (currentInvData, currentTransfers) => {
+    setSyncStatus("loading");
+    const result = await loadFromSheets(currentInvData, currentTransfers);
+    if (result.ok) {
+      setInvData(result.invData);
+      persist(SK.inv, result.invData);
+      setTransfers(result.transfers);
+      persist(SK.trans, result.transfers);
+      setSyncStatus("ok");
+      setTimeout(() => setSyncStatus("idle"), 3000);
+    } else {
+      setSyncStatus("error");
+      setTimeout(() => setSyncStatus("idle"), 3000);
+    }
+    return result;
+  }, [persist]);
+
   // ── Storage ──
   useEffect(()=>{
     (async()=>{
@@ -269,16 +342,34 @@ function App() {
         try{ const r=await window.storage.get(key); if(r&&r.value) setter(JSON.parse(r.value)); else if(fallback!==undefined) setter(fallback); }
         catch{ if(fallback!==undefined) setter(fallback); }
       };
+      // Load localStorage first
+      let localInv = {};
+      let localTrans = [];
+      const loadInv = async () => { try{ const r=await window.storage.get(SK.inv); if(r&&r.value){ localInv=JSON.parse(r.value); setInvData(localInv); } } catch{} };
+      const loadTrans = async () => { try{ const r=await window.storage.get(SK.trans); if(r&&r.value){ localTrans=JSON.parse(r.value); setTransfers(localTrans); } } catch{} };
       await Promise.all([
         load(SK.achats,setAchats,INIT_ACHATS),
         load(SK.params,setParams,DEFAULT_PARAMS),
-        load(SK.inv,setInvData,{}),
+        loadInv(),
         load(SK.ctrl,setCtrlData,{}),
-        load(SK.trans,setTransfers,[]),
+        loadTrans(),
         load(SK.validated,setValidated,{}),
         load(SK.force,setForceManual,{}),
       ]);
       setIsLoaded(true);
+      // Then try to sync from Sheets (silently, Sheets has priority)
+      setSyncStatus("loading");
+      const result = await loadFromSheets(localInv, localTrans);
+      if (result.ok) {
+        setInvData(result.invData);
+        persist(SK.inv, result.invData);
+        setTransfers(result.transfers);
+        persist(SK.trans, result.transfers);
+        setSyncStatus("ok");
+        setTimeout(() => setSyncStatus("idle"), 3000);
+      } else {
+        setSyncStatus("idle");
+      }
     })();
   },[]);
 
@@ -998,6 +1089,10 @@ function App() {
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {saved&&<span style={{fontSize:11,color:"#059669"}}>✓ Sauvegardé</span>}
+          {syncStatus==="loading"&&<span style={{fontSize:11,color:"#1565c0"}}>🔄 Sync…</span>}
+          {syncStatus==="ok"&&<span style={{fontSize:11,color:"#059669"}}>☁ Synced</span>}
+          {syncStatus==="error"&&<span style={{fontSize:11,color:"#e65100"}}>⚠ Sync KO</span>}
+          <button onClick={()=>syncFromSheets(invData,transfers)} disabled={syncStatus==="loading"} style={{fontSize:11,color:"#1565c0",background:"none",border:"1px solid #bbdefb",borderRadius:5,padding:"3px 9px",cursor:"pointer",opacity:syncStatus==="loading"?0.6:1}}>🔄 Sync</button>
           <button onClick={async()=>{ if(!window.confirm("Réinitialiser les achats ?")) return; try{await window.storage.delete(SK.achats);}catch{} setAchats(INIT_ACHATS); }} style={{fontSize:11,color:"#dc2626",background:"none",border:"1px solid #fecaca",borderRadius:5,padding:"3px 9px",cursor:"pointer"}}>Reset</button>
         </div>
       </div>
