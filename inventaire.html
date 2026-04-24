@@ -46,7 +46,17 @@ async function syncTransfertToSheets(transfert) {
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────
 const RESTAURANTS = ["Washington","Mathurins","Casanova","Vernier","Riviere"];
-const WEEKS = ["S09","S10","S11","S12","S13","S14","S15","S16","S17","S18"];
+
+// Génère dynamiquement les semaines : 8 passées + semaine courante + 4 futures
+const generateWeeks = () => {
+  const current = parseInt(getCurrentWeek().replace("S",""));
+  const weeks = [];
+  for (let i = current - 8; i <= current + 4; i++) {
+    if (i > 0 && i <= 52) weeks.push(`S${i}`);
+  }
+  return weeks;
+};
+const WEEKS = generateWeeks();
 const DEFAULT_PARAMS = {
   proteines: [
     {name:"Saumon", grammage:100, coeff:0.667, etats:[
