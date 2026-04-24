@@ -459,7 +459,7 @@ function App() {
 
         {/* ── Section tabs ── */}
         <div style={{display:"flex",gap:4,marginBottom:16}}>
-          {[["debut","Début"],["fin","Fin"],["transfert","Transferts"]].map(([v, l]) => (
+          {[["fin","Fin"],["transfert","Transferts"]].map(([v, l]) => (
             <button key={v} onClick={() => setInvSection_(v)}
               style={{flex:1,padding:"10px 0",fontSize:13,
                 fontWeight:invSection===v?700:400,
@@ -467,8 +467,7 @@ function App() {
                 color:invSection===v?"#fff":"#666",
                 border:"none",borderRadius:10,cursor:"pointer",transition:"all .15s"}}>
               {l}
-              {v==="debut" && valDeb && " ✓"}
-              {v==="fin"   && valFin && " ✓"}
+              {v==="fin" && valFin && " ✓"}
             </button>
           ))}
         </div>
