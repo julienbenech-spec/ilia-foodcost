@@ -112,7 +112,9 @@ const loadAchatsFromSheets = async () => {
     // Convertir rows → format INIT_ACHATS
     const achats = {};
     json.rows.forEach(row => {
-      const key = `${row.fournisseur}__${row.restaurant}__${row.mois}`;
+      // Normaliser le mois : "janvier 2026" → "Janvier 2026"
+      const moisNorm = row.mois ? row.mois.replace(/^(\w)/, c => c.toUpperCase()) : row.mois;
+      const key = `${row.fournisseur}__${row.restaurant}__${moisNorm}`;
       if (!achats[key]) achats[key] = [];
       achats[key].push({
         ingredient: row.article,
