@@ -155,11 +155,15 @@ function NumInput({value, onChange, placeholder="0"}) {
   useEffect(() => { setLocal(String(value ?? "")); }, [value]);
   return (
     <input
-      type="number"
+      type="text"
       inputMode="decimal"
       value={local}
       placeholder={placeholder}
-      onChange={e => { setLocal(e.target.value); onChange(e.target.value); }}
+      onChange={e => {
+        const raw = e.target.value.replace(",", ".");
+        setLocal(e.target.value);
+        onChange(raw);
+      }}
       style={{
         width: "100%", padding: "12px", border: "1px solid #ddd",
         borderRadius: 8, fontSize: 18, textAlign: "center",
@@ -674,8 +678,8 @@ function App() {
                 {/* Poids */}
                 <div style={{marginBottom:12}}>
                   <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Poids brut (kg)</div>
-                  <input inputMode="decimal" value={transForm.poids_brut}
-                    onChange={e => setTransForm(tf => ({...tf, poids_brut: e.target.value}))}
+                  <input type="text" inputMode="decimal" value={transForm.poids_brut}
+                    onChange={e => setTransForm(tf => ({...tf, poids_brut: e.target.value.replace(",",".")}))}
                     placeholder="0.00"
                     style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:16,textAlign:"center",background:"#fffde7",boxSizing:"border-box"}}/>
                 </div>
