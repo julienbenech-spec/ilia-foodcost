@@ -469,7 +469,7 @@ function App() {
 
         {/* ── Section tabs ── */}
         <div style={{display:"flex",gap:4,marginBottom:16}}>
-          {[["fin","Inventaire"],["transfert","Transferts"]].map(([v, l]) => (
+          {[["fin","Inventaire semaine"],["transfert","Transferts"]].map(([v, l]) => (
             <button key={v} onClick={() => setInvSection_(v)}
               style={{flex:1,padding:"10px 0",fontSize:13,
                 fontWeight:invSection===v?700:400,
