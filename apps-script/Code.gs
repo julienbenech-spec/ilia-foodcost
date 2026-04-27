@@ -106,7 +106,7 @@ function getZelty(params) {
 function getAchats(params) {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = ss.getSheetByName("Achats");
-  const data = sheet.getDataRange().getValues();
+  const data = sheet.getDataRange().getDisplayValues(); // getDisplayValues = texte affiché, pas dates ISO
   if (data.length <= 1) return jsonResponse({ rows: [] });
   const rows = data.slice(1).map(function(row) {
     return {
@@ -114,9 +114,9 @@ function getAchats(params) {
       restaurant: row[1],
       mois: row[2],
       article: row[3],
-      qty: row[4],
+      qty: parseFloat(String(row[4]).replace(',', '.')) || 0,
       unite: row[5],
-      montant_ht: row[6],
+      montant_ht: parseFloat(String(row[6]).replace(',', '.')) || 0,
       source: row[7]
     };
   });
