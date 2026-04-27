@@ -538,22 +538,25 @@ function App() {
                 const net   = Math.max(0, (l.poids_brut||0) - (l.tare||0));
                 const equiv = calcEquivCru(l.poids_brut, l.tare, getCoeffCruPure(params, pp.name, l.etat));
                 return (
-                  <div key={idx} style={{background:"#fff",borderRadius:10,border:"1px solid #eee",padding:"12px",marginBottom:8}}>
+                  <div key={idx} style={{background:"#fff",borderRadius:10,border:`1px solid ${!isReadOnly && !l.etat ? "#dc2626" : "#eee"}`,padding:"12px",marginBottom:8}}>
                     {/* État */}
                     {isReadOnly
                       ? <div style={{fontSize:13,fontWeight:600,color:"#333",marginBottom:8}}>{l.etat || "—"}</div>
-                      : <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-                          {pp.etats.map(e => (
-                            <button key={e.name}
-                              onClick={() => skEditable && updateLine2(skEditable, pp.name, idx, "etat", e.name)}
-                              style={{padding:"7px 14px",borderRadius:20,border:"1px solid",fontSize:13,
-                                borderColor:l.etat===e.name?accent:"#ddd",
-                                background:l.etat===e.name?accent:"#fff",
-                                color:l.etat===e.name?"#fff":"#555",
-                                cursor:"pointer",fontWeight:l.etat===e.name?600:400}}>
-                              {e.name}
-                            </button>
-                          ))}
+                      : <div style={{marginBottom:10}}>
+                          {!l.etat && <div style={{fontSize:11,color:"#dc2626",fontWeight:600,marginBottom:6}}>⚠ Sélectionne un état</div>}
+                          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                            {pp.etats.map(e => (
+                              <button key={e.name}
+                                onClick={() => skEditable && updateLine2(skEditable, pp.name, idx, "etat", e.name)}
+                                style={{padding:"7px 14px",borderRadius:20,border:"1px solid",fontSize:13,
+                                  borderColor:l.etat===e.name?accent:"#ddd",
+                                  background:l.etat===e.name?accent:"#fff",
+                                  color:l.etat===e.name?"#fff":"#555",
+                                  cursor:"pointer",fontWeight:l.etat===e.name?600:400}}>
+                                {e.name}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                     }
                     {/* Poids brut uniquement (tare masquée) */}
@@ -604,8 +607,20 @@ function App() {
                     </button>
                   </div>
                 : <button onClick={() => {
+                      // Vérifier qu'au moins une ligne existe
                       const any = params.proteines.some(p => getLines(finKey(invRest, invSem), p.name).length > 0);
                       if (!any) { alert("Ajoutez au moins une ligne avant de valider."); return; }
+                      // Vérifier que toutes les lignes ont un état sélectionné
+                      const missingEtat = params.proteines.flatMap(p =>
+                        getLines(finKey(invRest, invSem), p.name)
+                          .filter(l => !l.etat)
+                          .map(() => p.name)
+                      );
+                      if (missingEtat.length > 0) {
+                        const noms = [...new Set(missingEtat)].join(", ");
+                        alert(`État manquant pour : ${noms}\nSélectionne l'état de chaque ligne avant de valider.`);
+                        return;
+                      }
                       validate(vk);
                       const lignes = getLines(finKey(invRest, invSem), pp.name);
                       syncInventaireToSheets(invRest, invSem, pp.name, "fin", lignes, true);
