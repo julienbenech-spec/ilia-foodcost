@@ -43,6 +43,16 @@ window.storage = {
 
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeCLFr0A_Pxhgnbr6sUZxl8MQdDxXJbugUsvHJBAW0988bUz_EYXGvFaw3c7sgkskyQA/exec";
 
+// Écriture vers Apps Script via GET + param "data" (contourne CORS)
+const syncToSheets = (payload) => {
+  try {
+    const encoded = encodeURIComponent(JSON.stringify(payload));
+    fetch(`${APPS_SCRIPT_URL}?data=${encoded}`).catch(e => console.warn("syncToSheets failed:", e));
+  } catch(e) {
+    console.warn("syncToSheets error:", e);
+  }
+};
+
 const sheetsRowsToInvData = (rows) => {
   const invData = {};
   rows.forEach(row => {
@@ -94,12 +104,37 @@ const loadZeltyFromSheets = async () => {
   }
 };
 
+const loadAchatsFromSheets = async () => {
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL}?action=getAchats`);
+    const json = await resp.json();
+    if (!json.rows || json.rows.length === 0) return null;
+    // Convertir rows → format INIT_ACHATS
+    const achats = {};
+    json.rows.forEach(row => {
+      const key = `${row.fournisseur}__${row.restaurant}__${row.mois}`;
+      if (!achats[key]) achats[key] = [];
+      achats[key].push({
+        ingredient: row.article,
+        qty: parseFloat(row.qty) || 0,
+        unit: row.unite || "",
+        montant: parseFloat(row.montant_ht) || 0
+      });
+    });
+    return achats;
+  } catch(e) {
+    console.warn("loadAchatsFromSheets failed:", e);
+    return null;
+  }
+};
+
 const loadFromSheets = async (currentInvData, currentTransfers) => {
   try {
-    const [invResp, transResp, zeltyResult] = await Promise.all([
+    const [invResp, transResp, zeltyResult, achatsFromSheets] = await Promise.all([
       fetch(`${APPS_SCRIPT_URL}?action=getInventaire`),
       fetch(`${APPS_SCRIPT_URL}?action=getTransferts`),
-      loadZeltyFromSheets()
+      loadZeltyFromSheets(),
+      loadAchatsFromSheets()
     ]);
     const invJson = await invResp.json();
     const transJson = await transResp.json();
@@ -115,10 +150,10 @@ const loadFromSheets = async (currentInvData, currentTransfers) => {
     });
     // For transfers: if Sheets returned data, use Sheets; otherwise keep localStorage
     const mergedTrans = sheetsTrans.length > 0 ? sheetsTrans : (currentTransfers || []);
-    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, ok: true};
+    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, achatsData: achatsFromSheets, ok: true};
   } catch(e) {
     console.warn("loadFromSheets failed, using localStorage only:", e);
-    return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, ok: false};
+    return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, achatsData: null, ok: false};
   }
 };
 
@@ -374,6 +409,11 @@ function App() {
           return updated;
         });
       }
+      // Charger les achats depuis Sheets si disponibles
+      if (result.achatsData) {
+        setAchats(result.achatsData);
+        persist(SK.achats, result.achatsData);
+      }
       setSyncStatus("ok");
       setTimeout(() => setSyncStatus("idle"), 3000);
     } else {
@@ -433,6 +473,11 @@ function App() {
             } catch(e) {}
             return updated;
           });
+        }
+        // Charger les achats depuis Sheets si disponibles
+        if (result.achatsData) {
+          setAchats(result.achatsData);
+          persist(SK.achats, result.achatsData);
         }
         setSyncStatus("ok");
         setTimeout(() => setSyncStatus("idle"), 3000);
@@ -559,6 +604,17 @@ function App() {
     if(!form.ingredient.trim()||!form.montant) return;
     const k=`${form.fournisseur}__${form.restaurant}__${form.mois}`;
     saveAchats({...achats,[k]:[...(achats[k]||[]),{ingredient:form.ingredient.trim(),montant:parseFloat(form.montant),qty:form.qty?parseFloat(form.qty):0,unit:form.unit||""}]});
+    syncToSheets({
+      action: "saveAchat",
+      fournisseur: form.fournisseur,
+      restaurant: form.restaurant,
+      mois: form.mois,
+      article: form.ingredient.trim(),
+      qty: parseFloat(form.qty) || 0,
+      unite: form.unit || "",
+      montant_ht: parseFloat(form.montant),
+      source: "Manuel"
+    });
     setForm(f=>({...f,ingredient:"",montant:"",qty:"",unit:""}));
   };
   const delAchatLine=(k,i)=>{ const a=[...(achats[k]||[])]; a.splice(i,1); saveAchats({...achats,[k]:a}); };

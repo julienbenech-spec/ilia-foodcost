@@ -8,6 +8,7 @@ function doPost(e) {
     if (action === "saveInventaire") return saveInventaire(data);
     if (action === "saveTransfert")  return saveTransfert(data);
     if (action === "getInventaire")  return getInventaire(data);
+    if (action === "saveAchat")      return saveAchat(data);
     return jsonResponse({ error: "Unknown action: " + action });
   } catch (err) {
     return jsonResponse({ error: err.message });
@@ -22,12 +23,14 @@ function doGet(e) {
       const action = payload.action;
       if (action === "saveInventaire") return saveInventaire(payload);
       if (action === "saveTransfert")  return saveTransfert(payload);
+      if (action === "saveAchat")      return saveAchat(payload);
     }
     // Mode lecture
     const action = e.parameter.action;
     if (action === "getInventaire") return getInventaire(e.parameter);
     if (action === "getTransferts") return getTransferts(e.parameter);
     if (action === "getZelty") return getZelty(e.parameter);
+    if (action === "getAchats") return getAchats(e.parameter);
     return jsonResponse({ error: "Unknown action" });
   } catch (err) {
     return jsonResponse({ error: err.message });
@@ -98,6 +101,42 @@ function getZelty(params) {
     };
   });
   return jsonResponse({ rows: rows });
+}
+
+function getAchats(params) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("Achats");
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return jsonResponse({ rows: [] });
+  const rows = data.slice(1).map(function(row) {
+    return {
+      fournisseur: row[0],
+      restaurant: row[1],
+      mois: row[2],
+      article: row[3],
+      qty: row[4],
+      unite: row[5],
+      montant_ht: row[6],
+      source: row[7]
+    };
+  });
+  return jsonResponse({ rows: rows });
+}
+
+function saveAchat(data) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("Achats");
+  sheet.appendRow([
+    data.fournisseur,
+    data.restaurant,
+    data.mois,
+    data.article,
+    data.qty || 0,
+    data.unite || "",
+    data.montant_ht || 0,
+    data.source || "Manuel"
+  ]);
+  return jsonResponse({ ok: true });
 }
 
 function deleteExistingRows(sheet, restaurant, semaine, proteine, type) {
