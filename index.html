@@ -104,6 +104,17 @@ const loadZeltyFromSheets = async () => {
   }
 };
 
+const loadInventaireJourFromSheets = async () => {
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL}?action=getInventaireJour`);
+    const json = await resp.json();
+    return json.rows || [];
+  } catch(e) {
+    console.warn("loadInventaireJour failed:", e);
+    return [];
+  }
+};
+
 const loadAchatsFromSheets = async () => {
   try {
     const resp = await fetch(`${APPS_SCRIPT_URL}?action=getAchats`);
@@ -132,11 +143,12 @@ const loadAchatsFromSheets = async () => {
 
 const loadFromSheets = async (currentInvData, currentTransfers) => {
   try {
-    const [invResp, transResp, zeltyResult, achatsFromSheets] = await Promise.all([
+    const [invResp, transResp, zeltyResult, achatsFromSheets, jourRows] = await Promise.all([
       fetch(`${APPS_SCRIPT_URL}?action=getInventaire`),
       fetch(`${APPS_SCRIPT_URL}?action=getTransferts`),
       loadZeltyFromSheets(),
-      loadAchatsFromSheets()
+      loadAchatsFromSheets(),
+      loadInventaireJourFromSheets()
     ]);
     const invJson = await invResp.json();
     const transJson = await transResp.json();
@@ -152,10 +164,10 @@ const loadFromSheets = async (currentInvData, currentTransfers) => {
     });
     // For transfers: if Sheets returned data, use Sheets; otherwise keep localStorage
     const mergedTrans = sheetsTrans.length > 0 ? sheetsTrans : (currentTransfers || []);
-    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, achatsData: achatsFromSheets, ok: true};
+    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, achatsData: achatsFromSheets, jourData: jourRows || [], ok: true};
   } catch(e) {
     console.warn("loadFromSheets failed, using localStorage only:", e);
-    return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, achatsData: null, ok: false};
+    return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, achatsData: null, jourData: [], ok: false};
   }
 };
 
@@ -361,6 +373,11 @@ function App() {
   const [saved,     setSaved]     = useState(false);
   const [syncStatus, setSyncStatus] = useState("idle"); // "idle"|"loading"|"ok"|"error"
   const [mode,      setMode]      = useState("achats");
+  const [jourData,  setJourData]  = useState([]);
+  // Journalier UI
+  const [jourRest,  setJourRest]  = useState("Washington");
+  const [jourDate,  setJourDate]  = useState(new Date().toISOString().slice(0,10));
+  const [jourProt,  setJourProt]  = useState("Toutes");
 
   // Achats UI
   const [tab,        setTab]        = useState("Cercle Vert");
@@ -415,6 +432,10 @@ function App() {
       if (result.achatsData) {
         setAchats(result.achatsData);
         persist(SK.achats, result.achatsData);
+      }
+      // Charger inventaire journalier
+      if (result.jourData) {
+        setJourData(result.jourData);
       }
       setSyncStatus("ok");
       setTimeout(() => setSyncStatus("idle"), 3000);
@@ -480,6 +501,10 @@ function App() {
         if (result.achatsData) {
           setAchats(result.achatsData);
           persist(SK.achats, result.achatsData);
+        }
+        // Charger inventaire journalier
+        if (result.jourData) {
+          setJourData(result.jourData);
         }
         setSyncStatus("ok");
         setTimeout(() => setSyncStatus("idle"), 3000);
@@ -920,6 +945,95 @@ function App() {
   // ════════════════════════════════════════════════════════════════════════
   // CONTRÔLE VIEW
   // ════════════════════════════════════════════════════════════════════════
+  const renderJournalier=()=>{
+    const today = new Date().toISOString().slice(0,10);
+    const proteinesNames = ["Toutes", ...params.proteines.map(p=>p.name)];
+
+    const filtered = jourData.filter(row => {
+      const matchRest = jourRest === "Tous" || (row.restaurant||"").toLowerCase() === jourRest.toLowerCase();
+      const matchDate = !jourDate || (row.date||"").slice(0,10) === jourDate;
+      const matchProt = jourProt === "Toutes" || (row.proteine||"") === jourProt;
+      return matchRest && matchDate && matchProt;
+    });
+
+    const ecartColor = (ecart) => {
+      const abs = Math.abs(ecart);
+      if (abs <= 10) return {bg:"#e8f5e9", text:"#2e7d32"};
+      if (abs <= 20) return {bg:"#fff3e0", text:"#e65100"};
+      return {bg:"#ffebee", text:"#c62828"};
+    };
+
+    return (
+      <div>
+        {/* Filtres */}
+        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap",alignItems:"flex-end"}}>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".08em",marginBottom:4}}>Restaurant</div>
+            <select value={jourRest} onChange={e=>setJourRest(e.target.value)} style={{fontSize:13,padding:"6px 10px",border:"1px solid #e0e0e0",borderRadius:7,background:"#fff",cursor:"pointer",color:"#111"}}>
+              <option value="Tous">Tous</option>
+              {RESTAURANTS.map(r=><option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".08em",marginBottom:4}}>Date</div>
+            <input type="date" value={jourDate} onChange={e=>setJourDate(e.target.value)} style={{fontSize:13,padding:"6px 10px",border:"1px solid #e0e0e0",borderRadius:7,background:"#fff",color:"#111"}} />
+          </div>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".08em",marginBottom:4}}>Protéine</div>
+            <select value={jourProt} onChange={e=>setJourProt(e.target.value)} style={{fontSize:13,padding:"6px 10px",border:"1px solid #e0e0e0",borderRadius:7,background:"#fff",cursor:"pointer",color:"#111"}}>
+              {proteinesNames.map(p=><option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Tableau */}
+        {filtered.length === 0 ? (
+          <div style={{textAlign:"center",padding:"48px 24px",color:"#aaa",fontSize:14,background:"#fafafa",borderRadius:12,border:"1px dashed #e0e0e0"}}>
+            <div style={{fontSize:32,marginBottom:12}}>📋</div>
+            <div style={{fontWeight:600,color:"#888",marginBottom:6}}>Aucune donnée</div>
+            <div style={{fontSize:12}}>Utilisez l'inventaire mobile pour saisir</div>
+          </div>
+        ) : (
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <thead>
+                <tr style={{background:"#1a237e"}}>
+                  {["Date","Service","Protéine","État","Stock début","Stock fin","Portions","Gramm. réel","Gramm. théo","Écart"].map(h=>(
+                    <th key={h} style={{padding:"8px 10px",color:"#fff",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((row,i)=>{
+                  const ecart = (parseFloat(row.grammage_reel)||0) - (parseFloat(row.grammage_theo)||0);
+                  const col = ecartColor(ecart);
+                  return (
+                    <tr key={i} style={{borderBottom:"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
+                      <td style={{padding:"7px 10px",whiteSpace:"nowrap"}}>{(row.date||"").slice(0,10)}</td>
+                      <td style={{padding:"7px 10px"}}>{row.service||"—"}</td>
+                      <td style={{padding:"7px 10px",fontWeight:600}}>{row.proteine||"—"}</td>
+                      <td style={{padding:"7px 10px",color:"#666"}}>{row.etat||"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_debut!=null?parseFloat(row.stock_debut).toFixed(3):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_fin!=null?parseFloat(row.stock_fin).toFixed(3):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.portions!=null?parseFloat(row.portions).toFixed(0):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_reel!=null?parseFloat(row.grammage_reel).toFixed(1):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_theo!=null?parseFloat(row.grammage_theo).toFixed(1):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>
+                        <span style={{background:col.bg,color:col.text,padding:"2px 8px",borderRadius:10,fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>
+                          {ecart>=0?"+":""}{ecart.toFixed(1)}g
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderControle=()=>{
     const totals=params.proteines.map(pp=>({pp,cv:calcCtrlProt(ctrlRest,ctrlSem,pp)}));
     const totalTheo=totals.reduce((s,t)=>s+t.cv.theo_net,0);
@@ -1198,7 +1312,7 @@ function App() {
   );
 
   // ── RENDER ────────────────────────────────────────────────────────────────
-  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"params",label:"⚙️ Paramètres"}];
+  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"journalier",label:"📅 Journalier"},{id:"params",label:"⚙️ Paramètres"}];
 
   if(!isLoaded) return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:200,gap:12}}>
@@ -1221,7 +1335,7 @@ function App() {
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",color:"#aaa",textTransform:"uppercase",marginBottom:1}}>ILIA · Food Cost</div>
-          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",params:"Paramètres"}[mode]}</div>
+          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",journalier:"Inventaire journalier",params:"Paramètres"}[mode]}</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {saved&&<span style={{fontSize:11,color:"#059669"}}>✓ Sauvegardé</span>}
@@ -1247,6 +1361,7 @@ function App() {
           {renderControle()}
         </div>
       )}
+      {mode==="journalier" && renderJournalier()}
       {mode==="params" && renderParams()}
 
       <div style={{marginTop:20,fontSize:10,color:"#ddd",textAlign:"center"}}>ILIA Groupe © 2026</div>

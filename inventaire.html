@@ -561,20 +561,12 @@ function App() {
           </div>
         </div>
 
-        {/* ── Section tabs ── */}
-        <div style={{display:"flex",gap:4,marginBottom:16}}>
-          {[["fin","Inventaire semaine"],["transfert","Transferts"]].map(([v, l]) => (
-            <button key={v} onClick={() => setInvSection_(v)}
-              style={{flex:1,padding:"10px 0",fontSize:13,
-                fontWeight:invSection===v?700:400,
-                background:invSection===v?"#1a237e":"#f0f0ee",
-                color:invSection===v?"#fff":"#666",
-                border:"none",borderRadius:10,cursor:"pointer",transition:"all .15s"}}>
-              {l}
-              {v==="fin" && valFin && " ✓"}
-            </button>
-          ))}
-        </div>
+        {/* Indicateur validation */}
+        {valFin && (
+          <div style={{marginBottom:12,padding:"8px 14px",borderRadius:10,background:"#e8f5e9",border:"1px solid #a5d6a7",fontSize:12,color:"#2e7d32",fontWeight:600}}>
+            ✓ Inventaire validé
+          </div>
+        )}
 
         {/* ── Bannière blocage semaine ── */}
         {isWeekBlocked && (
