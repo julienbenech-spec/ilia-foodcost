@@ -130,9 +130,10 @@ const SK = {
   trans:     "ilia_trans",
   validated: "ilia_validated",
   force:     "ilia_force",
-  jourDebut: "ilia_jour_debut",
-  jourFin:   "ilia_jour_fin",
-  jourMeta:  "ilia_jour_meta",  // {restaurant, date, saved: {Saumon: true, ...}}
+  jourDebut:  "ilia_jour_debut",
+  jourFin:    "ilia_jour_fin",
+  jourMeta:   "ilia_jour_meta",   // {restaurant, date, saved: {Saumon: true, ...}}
+  jourVentes: "ilia_jour_ventes", // résultat getVentesJour
 };
 
 // ── PURE HELPERS ──────────────────────────────────────────────────────────
@@ -352,8 +353,9 @@ function App() {
         load(SK.trans,     setTransfers,   []),
         load(SK.validated, setValidated,   {}),
         load(SK.force,     setForceManual, {}),
-        load(SK.jourDebut, setJourDebut,   {}),
-        load(SK.jourFin,   setJourFin,     {}),
+        load(SK.jourDebut,  setJourDebut,  {}),
+        load(SK.jourFin,    setJourFin,    {}),
+        load(SK.jourVentes, setJourVentes, null),
         (async () => {
           const r = await window.storage.get(SK.jourMeta).catch(() => null);
           if (r && r.value) {
@@ -1022,8 +1024,10 @@ function App() {
         const url = `${PROXY}/?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
         const resp = await fetch(url, {headers:{"ngrok-skip-browser-warning":"true"}});
         const json = await resp.json();
-        if (json.ventes) setJourVentes(json.ventes);
-        else alert("Erreur: " + (json.error || "réponse invalide"));
+        if (json.ventes) {
+          setJourVentes(json.ventes);
+          persist(SK.jourVentes, json.ventes); // sauvegarder pour rechargement
+        } else alert("Erreur: " + (json.error || "réponse invalide"));
       } catch(e) { alert("Erreur réseau: " + e.message); }
       setJourLoading(false);
     };
@@ -1063,7 +1067,7 @@ function App() {
           <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Restaurant</div>
           <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
             {RESTAURANTS.map(r=>(
-              <button key={r} onClick={()=>{setJourRest(r);setJourVentes(null);setJourSaved({});}}
+              <button key={r} onClick={()=>{setJourRest(r);setJourVentes(null);setJourSaved({});window.storage.delete(SK.jourVentes);}}
                 style={{flexShrink:0,fontSize:13,padding:"8px 16px",borderRadius:20,border:"1px solid",
                   borderColor:jourRest===r?"#1a237e":"#e0e0e0",background:jourRest===r?"#1a237e":"#fff",
                   color:jourRest===r?"#fff":"#555",cursor:"pointer",fontWeight:jourRest===r?700:400}}>{r}</button>
@@ -1074,7 +1078,7 @@ function App() {
         {/* Date */}
         <div style={{marginBottom:16}}>
           <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Date</div>
-          <input type="date" value={jourDate} onChange={e=>{setJourDate(e.target.value);setJourVentes(null);setJourSaved({});}}
+          <input type="date" value={jourDate} onChange={e=>{setJourDate(e.target.value);setJourVentes(null);setJourSaved({});window.storage.delete(SK.jourVentes);}}
             style={{padding:"10px 14px",borderRadius:20,border:"1px solid #ddd",fontSize:14,background:"#fff",width:"100%",boxSizing:"border-box"}}/>
         </div>
 
