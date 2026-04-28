@@ -130,6 +130,9 @@ const SK = {
   trans:     "ilia_trans",
   validated: "ilia_validated",
   force:     "ilia_force",
+  jourDebut: "ilia_jour_debut",
+  jourFin:   "ilia_jour_fin",
+  jourMeta:  "ilia_jour_meta",  // {restaurant, date, saved: {Saumon: true, ...}}
 };
 
 // ── PURE HELPERS ──────────────────────────────────────────────────────────
@@ -349,6 +352,17 @@ function App() {
         load(SK.trans,     setTransfers,   []),
         load(SK.validated, setValidated,   {}),
         load(SK.force,     setForceManual, {}),
+        load(SK.jourDebut, setJourDebut,   {}),
+        load(SK.jourFin,   setJourFin,     {}),
+        (async () => {
+          const r = await window.storage.get(SK.jourMeta).catch(() => null);
+          if (r && r.value) {
+            const meta = JSON.parse(r.value);
+            if (meta.restaurant) setJourRest(meta.restaurant);
+            if (meta.date)       setJourDate(meta.date);
+            if (meta.saved)      setJourSaved(meta.saved);
+          }
+        })(),
       ]);
       setIsLoaded(true);
     })();
@@ -370,6 +384,23 @@ function App() {
   const saveTrans     = d => { setTransfers(d);   persist(SK.trans,     d); };
   const saveValidated = d => { setValidated(d);   persist(SK.validated, d); };
   const saveForce     = d => { setForceManual(d); persist(SK.force,     d); };
+
+  // ── Persistance journalier ────────────────────────────────────────────────
+  const saveJourDebut = d => { setJourDebut(d); persist(SK.jourDebut, d); };
+  const saveJourFin   = d => { setJourFin(d);   persist(SK.jourFin,   d); };
+  const saveJourMeta  = (rest, date, saved) => {
+    persist(SK.jourMeta, {restaurant: rest, date, saved});
+  };
+  // Statut par protéine : "vide" | "en_cours" | "complet"
+  const jourStatut = prot => {
+    const hasDebut = (jourDebut[prot] || []).some(l => l.poids_brut > 0);
+    const hasFin   = (jourFin[prot]   || []).some(l => l.poids_brut > 0);
+    if (jourSaved[prot])         return "complet";
+    if (hasDebut && !hasFin)     return "en_cours";
+    if (hasDebut && hasFin)      return "en_cours"; // fin saisie mais pas encore validé
+    return "vide";
+  };
+  const statutIcon = s => s === "complet" ? "✅" : s === "en_cours" ? "🟡" : "⬜";
 
   // ── Clés inventaire ──────────────────────────────────────────────────────
   const finKey    = (rest, sem) => `invfin__${rest}__${sem}`;
@@ -981,12 +1012,12 @@ function App() {
     const ecartCol   = ecart === null ? {bg:"#f5f5f5",text:"#888"} : Math.abs(ecart) <= 10 ? {bg:"#e8f5e9",text:"#2e7d32"} : Math.abs(ecart) <= 20 ? {bg:"#fff8e1",text:"#f57f17"} : {bg:"#ffebee",text:"#c62828"};
     const isSaved    = !!jourSaved[pp.name];
 
-    const addDebutLine = () => setJourDebut(d=>({...d,[pp.name]:[...(d[pp.name]||[]),{etat:"",poids_brut:0}]}));
-    const addFinLine   = () => setJourFin(d=>  ({...d,[pp.name]:[...(d[pp.name]||[]),{etat:"",poids_brut:0}]}));
-    const updDebut = (idx,f,v) => setJourDebut(d=>{const l=[...(d[pp.name]||[])];l[idx]={...l[idx],[f]:f==="etat"?v:(parseFloat(v)||0)};return{...d,[pp.name]:l};});
-    const updFin   = (idx,f,v) => setJourFin(d=>  {const l=[...(d[pp.name]||[])];l[idx]={...l[idx],[f]:f==="etat"?v:(parseFloat(v)||0)};return{...d,[pp.name]:l};});
-    const delDebut = idx => setJourDebut(d=>{const l=[...(d[pp.name]||[])];l.splice(idx,1);return{...d,[pp.name]:l};});
-    const delFin   = idx => setJourFin(d=>  {const l=[...(d[pp.name]||[])];l.splice(idx,1);return{...d,[pp.name]:l};});
+    const addDebutLine = () => { const d={...jourDebut,[pp.name]:[...(jourDebut[pp.name]||[]),{etat:"",poids_brut:0}]}; saveJourDebut(d); saveJourMeta(jourRest,jourDate,jourSaved); };
+    const addFinLine   = () => { const d={...jourFin,  [pp.name]:[...(jourFin[pp.name]  ||[]),{etat:"",poids_brut:0}]}; saveJourFin(d); };
+    const updDebut = (idx,f,v) => { const l=[...(jourDebut[pp.name]||[])]; l[idx]={...l[idx],[f]:f==="etat"?v:(parseFloat(v)||0)}; const d={...jourDebut,[pp.name]:l}; saveJourDebut(d); saveJourMeta(jourRest,jourDate,jourSaved); };
+    const updFin   = (idx,f,v) => { const l=[...(jourFin[pp.name]  ||[])]; l[idx]={...l[idx],[f]:f==="etat"?v:(parseFloat(v)||0)}; saveJourFin({...jourFin,[pp.name]:l}); };
+    const delDebut = idx => { const l=[...(jourDebut[pp.name]||[])]; l.splice(idx,1); saveJourDebut({...jourDebut,[pp.name]:l}); };
+    const delFin   = idx => { const l=[...(jourFin[pp.name]  ||[])]; l.splice(idx,1); saveJourFin({...jourFin,  [pp.name]:l}); };
 
     const fetchVentes = async () => {
       setJourLoading(true);
@@ -1005,6 +1036,7 @@ function App() {
       const missingEtat = [...debutLines,...finLines].filter(l=>!l.etat);
       if(missingEtat.length>0){alert("Sélectionne l'état de chaque ligne avant de valider.");return;}
       if(debutLines.length===0){alert("Ajoute au moins une ligne de stock début.");return;}
+      if(finLines.length===0){alert("Ajoute au moins une ligne de stock fin.");return;}
       if(!jourVentes){alert("Récupère les ventes avant de valider.");return;}
       syncToSheets({
         action:"saveInventaireJour",
@@ -1016,7 +1048,16 @@ function App() {
         total_portions: portions,
         grammage_theo_g: gramTheo
       });
-      setJourSaved(s=>({...s,[pp.name]:true}));
+      const newSaved = {...jourSaved,[pp.name]:true};
+      setJourSaved(newSaved);
+      saveJourMeta(jourRest, jourDate, newSaved);
+      // Si tout est validé → vider le localStorage journalier
+      const allDone = params.proteines.every(p=>newSaved[p.name]);
+      if(allDone){
+        window.storage.delete(SK.jourDebut);
+        window.storage.delete(SK.jourFin);
+        window.storage.delete(SK.jourMeta);
+      }
     };
 
     return (
@@ -1041,6 +1082,19 @@ function App() {
             style={{padding:"10px 14px",borderRadius:20,border:"1px solid #ddd",fontSize:14,background:"#fff",width:"100%",boxSizing:"border-box"}}/>
         </div>
 
+        {/* Récap statut */}
+        <div style={{display:"flex",gap:6,marginBottom:14,padding:"10px 14px",background:"#f8f8f6",borderRadius:12}}>
+          {params.proteines.map(p=>{
+            const st = jourStatut(p.name);
+            return (
+              <div key={p.name} style={{flex:1,textAlign:"center"}}>
+                <div style={{fontSize:18}}>{statutIcon(st)}</div>
+                <div style={{fontSize:10,color:"#888",marginTop:2}}>{p.name}</div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Service + bouton ventes */}
         <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
           <div style={{flex:1,padding:"10px 14px",borderRadius:10,background:"#e8eaf6",fontSize:13,fontWeight:600,color:"#1a237e",textAlign:"center"}}>
@@ -1055,17 +1109,19 @@ function App() {
 
         {/* Tabs protéines */}
         <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
-          {params.proteines.map((p,i)=>(
+          {params.proteines.map((p,i)=>{
+            const st = jourStatut(p.name);
+            return (
             <button key={p.name} onClick={()=>setJourProtIdx(i)}
               style={{flexShrink:0,padding:"8px 14px",borderRadius:14,border:"1px solid",
                 borderColor:jourProtIdx===i?"#1a237e":"#e0e0e0",
                 background:jourProtIdx===i?"#1a237e":"#fff",
                 color:jourProtIdx===i?"#fff":"#555",
                 cursor:"pointer",fontSize:13,fontWeight:jourProtIdx===i?700:400}}>
-              {p.name}
-              {jourSaved[p.name]&&<span style={{marginLeft:4,fontSize:10}}>✓</span>}
+              {statutIcon(st)} {p.name}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* Résultat ventes */}
