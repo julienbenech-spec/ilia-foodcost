@@ -1201,12 +1201,12 @@ function App() {
 
       {/* Navigation principale */}
       <div style={{display:"flex",gap:3,padding:"8px 12px 0",background:"#1a237e"}}>
-        {[["semaine","Inventaire semaine"],["journalier","Journalier"],["transfert","Transferts"]].map(([v,l])=>(
+        {[["semaine","Inv. semaine"],["journalier","Journalier"],["transfert","Transferts"]].map(([v,l])=>(
           <button key={v} onClick={()=>setMainTab(v)}
-            style={{flex:1,padding:"8px 4px",fontSize:11,fontWeight:mainTab===v?700:400,
+            style={{flex:1,padding:"8px 2px",fontSize:11,fontWeight:mainTab===v?700:400,
               background:mainTab===v?"#fff":"rgba(255,255,255,0.15)",
               color:mainTab===v?"#1a237e":"rgba(255,255,255,0.8)",
-              border:"none",borderRadius:"8px 8px 0 0",cursor:"pointer"}}>
+              border:"none",borderRadius:"8px 8px 0 0",cursor:"pointer",whiteSpace:"nowrap"}}>
             {l}
           </button>
         ))}
