@@ -7,7 +7,7 @@ const PROTEINES_SIG  = { "Saumon":["Jul's Bowl"], "Thon":["Fish Bowl"], "Boeuf":
 const PROTEINES_OPT  = {
   "Saumon": ["Saumon zaatar  ♨️","Saumon zaatar ♨️","Saumon Zaatar","Saumon zaatar"],
   "Thon":   ["Thon mi-cuit","Thon mi cuit"],
-  "Boeuf":  ["Boeuf Effiloché","Boeuf effiloché"],
+  "Boeuf":  ["Boeuf Effiloché","Boeuf effiloché","Boeuf snaké","Meat Bowl"],
   "Poulet": ["Poulet mariné aux épices ♨️","Poulet Grillé","Poulet grillé"]
 };
 
