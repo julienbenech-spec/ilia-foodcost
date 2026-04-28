@@ -991,9 +991,12 @@ function App() {
     const fetchVentes = async () => {
       setJourLoading(true);
       try {
-        const ventes = await fetchVentesZelty(jourRest, jourDate);
-        setJourVentes(ventes);
-      } catch(e) { alert("Erreur: " + e.message); }
+        const url = `${APPS_SCRIPT_URL}?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
+        const resp = await fetch(url);
+        const json = await resp.json();
+        if (json.ventes) setJourVentes(json.ventes);
+        else alert("Erreur: " + (json.error || "réponse invalide"));
+      } catch(e) { alert("Erreur réseau: " + e.message); }
       setJourLoading(false);
     };
 
