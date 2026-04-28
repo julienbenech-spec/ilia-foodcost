@@ -1002,8 +1002,10 @@ function App() {
     const debutLines = jourDebut[pp.name] || [];
     const finLines   = jourFin[pp.name]   || [];
 
-    const totalDebut = calcTotalFromLines(debutLines, pp.name, params);
-    const totalFin   = calcTotalFromLines(finLines,   pp.name, params);
+    // Journalier : on travaille en kg brut direct (pas de conversion cru net)
+    // Le grammage théorique est en cuit — pas besoin de convertir
+    const totalDebut = debutLines.reduce((s,l) => s + (parseFloat(l.poids_brut) || 0), 0);
+    const totalFin   = finLines.reduce((s,l)   => s + (parseFloat(l.poids_brut) || 0), 0);
     const conso      = Math.max(0, totalDebut - totalFin);
     const portions   = vp?.total_portions || 0;
     const gramReel   = portions > 0 ? Math.round((conso * 1000 / portions) * 10) / 10 : 0;
