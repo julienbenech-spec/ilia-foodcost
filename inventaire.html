@@ -1007,6 +1007,8 @@ function App() {
     const totalDebut = debutLines.reduce((s,l) => s + (parseFloat(l.poids_brut) || 0), 0);
     const totalFin   = finLines.reduce((s,l)   => s + (parseFloat(l.poids_brut) || 0), 0);
     const conso      = Math.max(0, totalDebut - totalFin);
+    // Ventes accessibles uniquement si stock début saisi + au moins un état sélectionné
+    const canFetchVentes = debutLines.length > 0 && debutLines.every(l => l.etat) && totalDebut > 0;
     const portions   = vp?.total_portions || 0;
     const gramReel   = portions > 0 ? Math.round((conso * 1000 / portions) * 10) / 10 : 0;
     const gramTheo   = pp.grammage;
@@ -1102,10 +1104,13 @@ function App() {
           <div style={{flex:1,padding:"10px 14px",borderRadius:10,background:"#e8eaf6",fontSize:13,fontWeight:600,color:"#1a237e",textAlign:"center"}}>
             🕙 Midi (10h-15h)
           </div>
-          <button onClick={fetchVentes} disabled={jourLoading}
-            style={{flex:1,padding:"10px 14px",background:jourVentes?"#e8f5e9":"#1a237e",color:jourVentes?"#2e7d32":"#fff",
-              border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>
-            {jourLoading?"⏳ Chargement…":jourVentes?"✓ Ventes chargées":"Récupérer les ventes"}
+          <button onClick={canFetchVentes ? fetchVentes : undefined} disabled={jourLoading || !canFetchVentes}
+            style={{flex:1,padding:"10px 14px",
+              background:jourVentes?"#e8f5e9":canFetchVentes?"#1a237e":"#e0e0e0",
+              color:jourVentes?"#2e7d32":canFetchVentes?"#fff":"#aaa",
+              border:"none",borderRadius:10,fontSize:13,fontWeight:700,
+              cursor:canFetchVentes?"pointer":"not-allowed",opacity:canFetchVentes?1:0.7}}>
+            {jourLoading?"⏳ Chargement…":jourVentes?"✓ Ventes chargées":canFetchVentes?"Récupérer les ventes":"Saisir le stock début d'abord"}
           </button>
         </div>
 
