@@ -253,9 +253,20 @@ function App() {
   // Inventaire UI
   const [invSem,  setInvSem]  = useState(getCurrentWeek);
   const weekScrollRef = useRef(null);
+  const [mainTab, setMainTab] = useState("semaine"); // semaine | journalier | transfert
   const [invRest, setInvRest] = useState("Washington");
   const [invMobileSection, setInvMobileSection] = useState("fin"); // fin | transfert
   const [invMobileProtIdx, setInvMobileProtIdx] = useState(0);
+
+  // ── Journalier state ─────────────────────────────────────────────────────
+  const [jourRest,    setJourRest]    = useState("Washington");
+  const [jourDate,    setJourDate]    = useState(new Date().toISOString().split("T")[0]);
+  const [jourProtIdx, setJourProtIdx] = useState(0);
+  const [jourVentes,  setJourVentes]  = useState(null); // résultat getVentesJour
+  const [jourLoading, setJourLoading] = useState(false);
+  const [jourDebut,   setJourDebut]   = useState({}); // {Saumon: [{etat,poids_brut}], ...}
+  const [jourFin,     setJourFin]     = useState({}); // idem
+  const [jourSaved,   setJourSaved]   = useState({});  // {Saumon: true, ...}
 
   // Transfert form
   const [transForm, setTransForm] = useState({
@@ -763,6 +774,345 @@ function App() {
     );
   };
 
+  // ── TRANSFERTS (standalone pour mainTab) ────────────────────────────────
+  const renderTransferts = () => {
+    return (
+      <div style={{maxWidth:480,margin:"0 auto"}}>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Restaurant</div>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+            {RESTAURANTS.map(r=>(
+              <button key={r} onClick={()=>setInvRest(r)}
+                style={{flexShrink:0,fontSize:13,padding:"8px 16px",borderRadius:20,border:"1px solid",
+                  borderColor:invRest===r?"#1a237e":"#e0e0e0",background:invRest===r?"#1a237e":"#fff",
+                  color:invRest===r?"#fff":"#555",cursor:"pointer",fontWeight:invRest===r?700:400}}>{r}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Semaine</div>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+            {WEEKS.map(w=>(
+              <button key={w} onClick={()=>setInvSem(w)}
+                ref={el=>{if(el&&w===invSem)setTimeout(()=>el.scrollIntoView({behavior:"smooth",inline:"start",block:"nearest"}),50);}}
+                style={{flexShrink:0,fontSize:13,padding:"8px 14px",borderRadius:20,border:"1px solid",
+                  borderColor:invSem===w?"#e65100":"#e0e0e0",background:invSem===w?"#e65100":"#fff",
+                  color:invSem===w?"#fff":"#555",cursor:"pointer",fontWeight:invSem===w?700:400}}>
+                <span style={{display:"block",fontSize:11,opacity:.7,lineHeight:1}}>{w}</span>
+                <span style={{display:"block",fontSize:13,lineHeight:1.3}}>{semToDate(w)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Contenu transferts (réutilise la section transfert de renderInventaire) */}
+        {(() => {
+          const [showT, setShowT] = [showTrans, setShowTrans];
+          const transfers_this = transfers.filter(t=>(t.from===invRest||t.to===invRest)&&t.sem===invSem);
+          return (
+            <div>
+              <button onClick={()=>setShowT(!showT)}
+                style={{width:"100%",padding:"14px",background:showT?"#f5f5f5":"#fff3e0",color:"#e65100",border:"1px solid #ffe0b2",borderRadius:12,fontSize:14,cursor:"pointer",fontWeight:600,marginBottom:12}}>
+                {showT?"Annuler":"+ Nouveau transfert"}
+              </button>
+              {showT&&(
+                <div style={{background:"#fff8f0",border:"1px solid #ffe0b2",borderRadius:12,padding:16,marginBottom:16}}>
+                  <div style={{marginBottom:12}}>
+                    <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Vers</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {RESTAURANTS.filter(r=>r!==invRest).map(r=>(
+                        <button key={r} onClick={()=>setTransForm(f=>({...f,to:r}))}
+                          style={{padding:"9px 16px",borderRadius:20,border:"1px solid",fontSize:13,
+                            borderColor:transForm.to===r?"#e65100":"#ddd",background:transForm.to===r?"#e65100":"#fff",
+                            color:transForm.to===r?"#fff":"#555",cursor:"pointer",fontWeight:transForm.to===r?600:400}}>
+                          {r}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Protéine</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {params.proteines.map(p=>(
+                        <button key={p.name} onClick={()=>setTransForm(f=>({...f,prot:p.name,etat:""}))}
+                          style={{padding:"9px 16px",borderRadius:20,border:"1px solid",fontSize:13,
+                            borderColor:transForm.prot===p.name?"#e65100":"#ddd",background:transForm.prot===p.name?"#e65100":"#fff",
+                            color:transForm.prot===p.name?"#fff":"#555",cursor:"pointer",fontWeight:transForm.prot===p.name?600:400}}>
+                          {p.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>État</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {(params.proteines.find(p=>p.name===transForm.prot)?.etats||[]).map(e=>(
+                        <button key={e.name} onClick={()=>setTransForm(f=>({...f,etat:e.name}))}
+                          style={{padding:"9px 16px",borderRadius:20,border:"1px solid",fontSize:13,
+                            borderColor:transForm.etat===e.name?"#e65100":"#ddd",background:transForm.etat===e.name?"#e65100":"#fff",
+                            color:transForm.etat===e.name?"#fff":"#555",cursor:"pointer",fontWeight:transForm.etat===e.name?600:400}}>
+                          {e.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{marginBottom:12}}>
+                    <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Poids brut (kg)</div>
+                    <input type="text" inputMode="decimal" value={transForm.poids_brut}
+                      onChange={e=>setTransForm(tf=>({...tf,poids_brut:e.target.value.replace(",",".")}))}
+                      placeholder="0.00"
+                      style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:16,textAlign:"center",background:"#fffde7",boxSizing:"border-box"}}/>
+                  </div>
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontSize:11,color:"#888",marginBottom:6,fontWeight:600,textTransform:"uppercase"}}>Note (optionnel)</div>
+                    <input value={transForm.note} onChange={e=>setTransForm(f=>({...f,note:e.target.value}))}
+                      placeholder="Ex: surplus semaine"
+                      style={{width:"100%",padding:"12px",borderRadius:10,border:"1px solid #ddd",fontSize:14,boxSizing:"border-box"}}/>
+                  </div>
+                  {transForm.poids_brut&&transForm.etat&&(
+                    <div style={{padding:"10px 14px",background:"#e8f5e9",borderRadius:8,marginBottom:12,fontSize:13,color:"#2e7d32",fontWeight:600,textAlign:"center"}}>
+                      ≡ {fmtN(calcEquivCru(parseFloat(transForm.poids_brut)||0,0,getCoeffCruPure(params,transForm.prot,transForm.etat)),3)} kg cru net
+                    </div>
+                  )}
+                  <button onClick={()=>{
+                    if(!transForm.poids_brut||!transForm.etat) return;
+                    addTransfer(invRest,transForm.to,invSem,transForm.prot,transForm.etat,transForm.poids_brut,0,transForm.note);
+                    setTransForm(f=>({...f,etat:"",poids_brut:"",note:""}));
+                    setShowT(false);
+                  }} style={{width:"100%",padding:"16px",background:"#e65100",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer"}}>
+                    Valider le transfert
+                  </button>
+                </div>
+              )}
+              {transfers_this.length===0
+                ?<div style={{textAlign:"center",padding:"24px 0",color:"#bbb",fontSize:13}}>Aucun transfert cette semaine</div>
+                :<div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {transfers_this.map(t=>{
+                    const isOut=t.from===invRest;
+                    return(
+                      <div key={t.id} style={{background:isOut?"#ffebee":"#e8f5e9",borderRadius:10,padding:"12px 14px",fontSize:13}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                          <span style={{fontWeight:700,color:isOut?"#c62828":"#2e7d32"}}>{isOut?"↗ Sortie":"↙ Entrée"} — {t.prot}</span>
+                          <button onClick={()=>delTransfer(t.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#aaa",fontSize:16,padding:"0 4px"}}>✕</button>
+                        </div>
+                        <div style={{color:"#555",marginBottom:2}}><span style={{background:"rgba(0,0,0,0.08)",padding:"2px 7px",borderRadius:4,fontSize:12}}>{t.etat}</span> {isOut?`→ ${t.to}`:`← ${t.from}`}</div>
+                        <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+                          <span style={{color:"#888",fontSize:12}}>{fmtN(t.poids_brut,3)} kg brut</span>
+                          <span style={{fontWeight:700}}>= {fmtN(t.qty_net,3)} kg cru net</span>
+                        </div>
+                        {t.note&&<div style={{fontSize:12,color:"#999",marginTop:4,fontStyle:"italic"}}>{t.note}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              }
+            </div>
+          );
+        })()}
+      </div>
+    );
+  };
+
+  // ── JOURNALIER ────────────────────────────────────────────────────────────
+  const renderJournalier = () => {
+    const pp = params.proteines[jourProtIdx] || params.proteines[0];
+    const vp = jourVentes?.[pp.name] || null;
+    const debutLines = jourDebut[pp.name] || [];
+    const finLines   = jourFin[pp.name]   || [];
+
+    const totalDebut = calcTotalFromLines(debutLines, pp.name, params);
+    const totalFin   = calcTotalFromLines(finLines,   pp.name, params);
+    const conso      = Math.max(0, totalDebut - totalFin);
+    const portions   = vp?.total_portions || 0;
+    const gramReel   = portions > 0 ? Math.round((conso * 1000 / portions) * 10) / 10 : 0;
+    const gramTheo   = pp.grammage;
+    const ecart      = gramReel > 0 ? Math.round((gramReel - gramTheo) * 10) / 10 : null;
+    const ecartCol   = ecart === null ? {bg:"#f5f5f5",text:"#888"} : Math.abs(ecart) <= 10 ? {bg:"#e8f5e9",text:"#2e7d32"} : Math.abs(ecart) <= 20 ? {bg:"#fff8e1",text:"#f57f17"} : {bg:"#ffebee",text:"#c62828"};
+    const isSaved    = !!jourSaved[pp.name];
+
+    const addDebutLine = () => setJourDebut(d=>({...d,[pp.name]:[...(d[pp.name]||[]),{etat:"",poids_brut:0}]}));
+    const addFinLine   = () => setJourFin(d=>  ({...d,[pp.name]:[...(d[pp.name]||[]),{etat:"",poids_brut:0}]}));
+    const updDebut = (idx,f,v) => setJourDebut(d=>{const l=[...(d[pp.name]||[])];l[idx]={...l[idx],[f]:f==="etat"?v:(parseFloat(v)||0)};return{...d,[pp.name]:l};});
+    const updFin   = (idx,f,v) => setJourFin(d=>  {const l=[...(d[pp.name]||[])];l[idx]={...l[idx],[f]:f==="etat"?v:(parseFloat(v)||0)};return{...d,[pp.name]:l};});
+    const delDebut = idx => setJourDebut(d=>{const l=[...(d[pp.name]||[])];l.splice(idx,1);return{...d,[pp.name]:l};});
+    const delFin   = idx => setJourFin(d=>  {const l=[...(d[pp.name]||[])];l.splice(idx,1);return{...d,[pp.name]:l};});
+
+    const fetchVentes = async () => {
+      setJourLoading(true);
+      try {
+        const url = `${APPS_SCRIPT_URL}?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
+        const resp = await fetch(url);
+        const json = await resp.json();
+        if (json.ventes) setJourVentes(json.ventes);
+        else alert("Erreur: " + (json.error || "réponse invalide"));
+      } catch(e) { alert("Erreur réseau: " + e.message); }
+      setJourLoading(false);
+    };
+
+    const saveJour = () => {
+      const missingEtat = [...debutLines,...finLines].filter(l=>!l.etat);
+      if(missingEtat.length>0){alert("Sélectionne l'état de chaque ligne avant de valider.");return;}
+      if(debutLines.length===0){alert("Ajoute au moins une ligne de stock début.");return;}
+      if(!jourVentes){alert("Récupère les ventes avant de valider.");return;}
+      syncToSheets({
+        action:"saveInventaireJour",
+        restaurant:jourRest, date:jourDate, service:"midi",
+        proteine:pp.name,
+        etat: debutLines.map(l=>l.etat).join("+"),
+        stock_debut_kg: totalDebut,
+        stock_fin_kg: totalFin,
+        total_portions: portions,
+        grammage_theo_g: gramTheo
+      });
+      setJourSaved(s=>({...s,[pp.name]:true}));
+    };
+
+    return (
+      <div style={{maxWidth:480,margin:"0 auto"}}>
+        {/* Restaurant */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Restaurant</div>
+          <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4}}>
+            {RESTAURANTS.map(r=>(
+              <button key={r} onClick={()=>{setJourRest(r);setJourVentes(null);setJourSaved({});}}
+                style={{flexShrink:0,fontSize:13,padding:"8px 16px",borderRadius:20,border:"1px solid",
+                  borderColor:jourRest===r?"#1a237e":"#e0e0e0",background:jourRest===r?"#1a237e":"#fff",
+                  color:jourRest===r?"#fff":"#555",cursor:"pointer",fontWeight:jourRest===r?700:400}}>{r}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Date */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Date</div>
+          <input type="date" value={jourDate} onChange={e=>{setJourDate(e.target.value);setJourVentes(null);setJourSaved({});}}
+            style={{padding:"10px 14px",borderRadius:20,border:"1px solid #ddd",fontSize:14,background:"#fff",width:"100%",boxSizing:"border-box"}}/>
+        </div>
+
+        {/* Service + bouton ventes */}
+        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
+          <div style={{flex:1,padding:"10px 14px",borderRadius:10,background:"#e8eaf6",fontSize:13,fontWeight:600,color:"#1a237e",textAlign:"center"}}>
+            🕙 Midi (10h-15h)
+          </div>
+          <button onClick={fetchVentes} disabled={jourLoading}
+            style={{flex:1,padding:"10px 14px",background:jourVentes?"#e8f5e9":"#1a237e",color:jourVentes?"#2e7d32":"#fff",
+              border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer"}}>
+            {jourLoading?"⏳ Chargement…":jourVentes?"✓ Ventes chargées":"Récupérer les ventes"}
+          </button>
+        </div>
+
+        {/* Tabs protéines */}
+        <div style={{display:"flex",gap:6,marginBottom:16,overflowX:"auto",paddingBottom:4}}>
+          {params.proteines.map((p,i)=>(
+            <button key={p.name} onClick={()=>setJourProtIdx(i)}
+              style={{flexShrink:0,padding:"8px 14px",borderRadius:14,border:"1px solid",
+                borderColor:jourProtIdx===i?"#1a237e":"#e0e0e0",
+                background:jourProtIdx===i?"#1a237e":"#fff",
+                color:jourProtIdx===i?"#fff":"#555",
+                cursor:"pointer",fontSize:13,fontWeight:jourProtIdx===i?700:400}}>
+              {p.name}
+              {jourSaved[p.name]&&<span style={{marginLeft:4,fontSize:10}}>✓</span>}
+            </button>
+          ))}
+        </div>
+
+        {/* Résultat ventes */}
+        {vp&&(
+          <div style={{padding:"12px 14px",background:"#e8eaf6",borderRadius:12,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:11,color:"#666",marginBottom:2}}>Portions vendues</div>
+              <div style={{fontSize:20,fontWeight:700,color:"#1a237e"}}>{vp.total_portions}</div>
+              <div style={{fontSize:11,color:"#888"}}>{vp.portions_sig} sig + {vp.portions_opt} opt</div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:11,color:"#666",marginBottom:2}}>Théorique</div>
+              <div style={{fontSize:16,fontWeight:600,color:"#1a237e"}}>{fmtN(vp.theo_net_kg,2)} kg</div>
+              <div style={{fontSize:11,color:"#888"}}>{gramTheo}g / portion</div>
+            </div>
+          </div>
+        )}
+
+        {/* Stock début */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#e65100",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>Stock début</div>
+          {debutLines.map((l,idx)=>(
+            <div key={idx} style={{background:"#fff",borderRadius:10,border:`1px solid ${!l.etat?"#dc2626":"#eee"}`,padding:"12px",marginBottom:8}}>
+              {!l.etat&&<div style={{fontSize:11,color:"#dc2626",fontWeight:600,marginBottom:6}}>⚠ Sélectionne un état</div>}
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+                {pp.etats.map(e=>(
+                  <button key={e.name} onClick={()=>updDebut(idx,"etat",e.name)}
+                    style={{padding:"7px 14px",borderRadius:20,border:"1px solid",fontSize:13,
+                      borderColor:l.etat===e.name?"#e65100":"#ddd",background:l.etat===e.name?"#e65100":"#fff",
+                      color:l.etat===e.name?"#fff":"#555",cursor:"pointer"}}>
+                    {e.name}
+                  </button>
+                ))}
+              </div>
+              <NumInput value={l.poids_brut} onChange={v=>updDebut(idx,"poids_brut",v)} placeholder="Poids brut (kg)"/>
+              <button onClick={()=>delDebut(idx)} style={{width:"100%",marginTop:8,padding:"8px",background:"#ffebee",color:"#c62828",border:"none",borderRadius:8,fontSize:13,cursor:"pointer"}}>Supprimer</button>
+            </div>
+          ))}
+          <button onClick={addDebutLine} style={{width:"100%",padding:"12px",background:"#fff3e0",color:"#e65100",border:"2px dashed #ffcc80",borderRadius:10,fontSize:14,cursor:"pointer",fontWeight:600}}>
+            + Ajouter ligne début
+          </button>
+        </div>
+
+        {/* Stock fin */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#1a237e",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>Stock fin de service</div>
+          {finLines.map((l,idx)=>(
+            <div key={idx} style={{background:"#fff",borderRadius:10,border:`1px solid ${!l.etat?"#dc2626":"#eee"}`,padding:"12px",marginBottom:8}}>
+              {!l.etat&&<div style={{fontSize:11,color:"#dc2626",fontWeight:600,marginBottom:6}}>⚠ Sélectionne un état</div>}
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+                {pp.etats.map(e=>(
+                  <button key={e.name} onClick={()=>updFin(idx,"etat",e.name)}
+                    style={{padding:"7px 14px",borderRadius:20,border:"1px solid",fontSize:13,
+                      borderColor:l.etat===e.name?"#1a237e":"#ddd",background:l.etat===e.name?"#1a237e":"#fff",
+                      color:l.etat===e.name?"#fff":"#555",cursor:"pointer"}}>
+                    {e.name}
+                  </button>
+                ))}
+              </div>
+              <NumInput value={l.poids_brut} onChange={v=>updFin(idx,"poids_brut",v)} placeholder="Poids brut (kg)"/>
+              <button onClick={()=>delFin(idx)} style={{width:"100%",marginTop:8,padding:"8px",background:"#ffebee",color:"#c62828",border:"none",borderRadius:8,fontSize:13,cursor:"pointer"}}>Supprimer</button>
+            </div>
+          ))}
+          <button onClick={addFinLine} style={{width:"100%",padding:"12px",background:"#e8eaf6",color:"#1a237e",border:"2px dashed #9fa8da",borderRadius:10,fontSize:14,cursor:"pointer",fontWeight:600}}>
+            + Ajouter ligne fin
+          </button>
+        </div>
+
+        {/* Résultat écart */}
+        {debutLines.length>0&&finLines.length>0&&vp&&(
+          <div style={{padding:"14px 16px",borderRadius:12,background:ecartCol.bg,border:`1px solid ${ecartCol.text}33`,marginBottom:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+              <span style={{fontSize:12,color:"#666"}}>Conso réelle</span>
+              <span style={{fontWeight:700,color:"#333"}}>{fmtN(conso,3)} kg net</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+              <span style={{fontSize:12,color:"#666"}}>Grammage réel</span>
+              <span style={{fontWeight:700,color:ecartCol.text,fontSize:16}}>{gramReel}g / portion</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between"}}>
+              <span style={{fontSize:12,color:"#666"}}>Écart vs théorique ({gramTheo}g)</span>
+              <span style={{fontWeight:700,color:ecartCol.text}}>{ecart!==null?(ecart>=0?"+":"")+ecart+"g":"—"}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Bouton valider */}
+        {isSaved
+          ?<div style={{padding:"12px 16px",background:"#e8f5e9",borderRadius:12,border:"1px solid #a5d6a7",textAlign:"center",fontSize:14,fontWeight:700,color:"#2e7d32"}}>
+            ✓ Inventaire journalier validé
+          </div>
+          :<button onClick={saveJour}
+            style={{width:"100%",padding:"16px",background:"#1a237e",color:"#fff",border:"none",borderRadius:12,fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 12px rgba(26,35,126,.3)"}}>
+            ✓ Valider l'inventaire journalier
+          </button>
+        }
+      </div>
+    );
+  };
+
   // ── LOADING ───────────────────────────────────────────────────────────────
   if (!isLoaded) return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",gap:12}}>
@@ -800,9 +1150,24 @@ function App() {
         </div>
       </div>
 
+      {/* Navigation principale */}
+      <div style={{display:"flex",gap:3,padding:"8px 12px 0",background:"#1a237e"}}>
+        {[["semaine","Inventaire semaine"],["journalier","Journalier"],["transfert","Transferts"]].map(([v,l])=>(
+          <button key={v} onClick={()=>setMainTab(v)}
+            style={{flex:1,padding:"8px 4px",fontSize:11,fontWeight:mainTab===v?700:400,
+              background:mainTab===v?"#fff":"rgba(255,255,255,0.15)",
+              color:mainTab===v?"#1a237e":"rgba(255,255,255,0.8)",
+              border:"none",borderRadius:"8px 8px 0 0",cursor:"pointer"}}>
+            {l}
+          </button>
+        ))}
+      </div>
+
       {/* Contenu */}
       <div style={{padding:"16px 12px 40px"}}>
-        {renderInventaire()}
+        {mainTab === "semaine"    && renderInventaire()}
+        {mainTab === "journalier" && renderJournalier()}
+        {mainTab === "transfert"  && renderTransferts()}
       </div>
 
       <div style={{textAlign:"center",fontSize:10,color:"#ccc",paddingBottom:16}}>
