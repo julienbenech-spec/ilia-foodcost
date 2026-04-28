@@ -1032,12 +1032,39 @@ function App() {
       setJourLoading(false);
     };
 
-    const saveJour = () => {
+    const saveJour = async () => {
       const missingEtat = [...debutLines,...finLines].filter(l=>!l.etat);
       if(missingEtat.length>0){alert("Sélectionne l'état de chaque ligne avant de valider.");return;}
       if(debutLines.length===0){alert("Ajoute au moins une ligne de stock début.");return;}
       if(finLines.length===0){alert("Ajoute au moins une ligne de stock fin.");return;}
-      if(!jourVentes){alert("Récupère les ventes avant de valider.");return;}
+
+      // Récupérer les ventes automatiquement si pas encore chargées
+      let ventes = jourVentes;
+      if(!ventes){
+        setJourLoading(true);
+        try {
+          const PROXY = "https://instantaneous-indigestible-johan.ngrok-free.dev";
+          const url = `${PROXY}/?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
+          const resp = await fetch(url, {headers:{"ngrok-skip-browser-warning":"true"}});
+          const json = await resp.json();
+          if(json.ventes){
+            ventes = json.ventes;
+            setJourVentes(ventes);
+            persist(SK.jourVentes, ventes);
+          } else {
+            alert("Impossible de récupérer les ventes: " + (json.error||"erreur inconnue"));
+            setJourLoading(false);
+            return;
+          }
+        } catch(e){
+          alert("Erreur réseau lors de la récupération des ventes: " + e.message);
+          setJourLoading(false);
+          return;
+        }
+        setJourLoading(false);
+      }
+
+      const totalP = ventes?.[pp.name]?.total_portions || 0;
       syncToSheets({
         action:"saveInventaireJour",
         restaurant:jourRest, date:jourDate, service:"midi",
@@ -1045,13 +1072,12 @@ function App() {
         etat: debutLines.map(l=>l.etat).join("+"),
         stock_debut_kg: totalDebut,
         stock_fin_kg: totalFin,
-        total_portions: portions,
+        total_portions: totalP,
         grammage_theo_g: gramTheo
       });
       const newSaved = {...jourSaved,[pp.name]:true};
       setJourSaved(newSaved);
       saveJourMeta(jourRest, jourDate, newSaved);
-      // Si tout est validé → vider le localStorage journalier
       const allDone = params.proteines.every(p=>newSaved[p.name]);
       if(allDone){
         window.storage.delete(SK.jourDebut);
@@ -1096,19 +1122,9 @@ function App() {
           })}
         </div>
 
-        {/* Service + bouton ventes */}
-        <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
-          <div style={{flex:1,padding:"10px 14px",borderRadius:10,background:"#e8eaf6",fontSize:13,fontWeight:600,color:"#1a237e",textAlign:"center"}}>
-            🕙 Midi (10h-15h)
-          </div>
-          <button onClick={canFetchVentes ? fetchVentes : undefined} disabled={jourLoading || !canFetchVentes}
-            style={{flex:1,padding:"10px 14px",
-              background:jourVentes?"#e8f5e9":canFetchVentes?"#1a237e":"#e0e0e0",
-              color:jourVentes?"#2e7d32":canFetchVentes?"#fff":"#aaa",
-              border:"none",borderRadius:10,fontSize:13,fontWeight:700,
-              cursor:canFetchVentes?"pointer":"not-allowed",opacity:canFetchVentes?1:0.7}}>
-            {jourLoading?"⏳ Chargement…":jourVentes?"✓ Ventes chargées":canFetchVentes?"Récupérer les ventes":"Saisir le stock début d'abord"}
-          </button>
+        {/* Service */}
+        <div style={{padding:"10px 14px",borderRadius:10,background:"#e8eaf6",fontSize:13,fontWeight:600,color:"#1a237e",textAlign:"center",marginBottom:16}}>
+          🕙 Service midi (10h-15h)
         </div>
 
         {/* Tabs protéines */}
