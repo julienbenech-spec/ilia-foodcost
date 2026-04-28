@@ -17,8 +17,60 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; }
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
 
-// ── Apps Script URL (vide pour l'instant) ─────────────────────────────────
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx12yVp8X6mwYtU6nrjcDclyAYQCustfx_3Xoau4RRc0mIFo03-712urnNGkLh0ETlbKQ/exec";
+
+// ── Zelty API (direct depuis le navigateur) ───────────────────────────────
+const ZELTY_API_KEY = "MTk5NzQ6V6HdyWUYGuZhFNX50WjTC4dad8=";
+const ZELTY_BASE    = "https://api.zelty.fr/2.10";
+const ZELTY_RESTOS  = {Washington:7022, Mathurins:9080, Riviere:9185, Casanova:9281, Vernier:9283};
+const PROTEINES_SIG = {Saumon:["Jul's Bowl"], Thon:["Fish Bowl"], Boeuf:["Meat Bowl"], Poulet:["John's Bowl"]};
+const PROTEINES_OPT = {
+  Saumon: ["Saumon zaatar  ♨️","Saumon zaatar ♨️","Saumon Zaatar","Saumon zaatar"],
+  Thon:   ["Thon mi-cuit","Thon mi cuit"],
+  Boeuf:  ["Boeuf Effiloché","Boeuf effiloché"],
+  Poulet: ["Poulet mariné aux épices ♨️","Poulet Grillé","Poulet grillé"]
+};
+const GRAMMAGES = {Saumon:100, Thon:80, Boeuf:70, Poulet:130};
+
+async function fetchVentesZelty(restaurant, date) {
+  const restoId = ZELTY_RESTOS[restaurant];
+  if (!restoId) throw new Error("Restaurant inconnu: " + restaurant);
+  const from = `${date}T10:00:00`;
+  const to   = `${date}T15:00:00`;
+  const counts = {Saumon:{sig:0,opt:0}, Thon:{sig:0,opt:0}, Boeuf:{sig:0,opt:0}, Poulet:{sig:0,opt:0}};
+  let offset = 0, hasMore = true;
+  while (hasMore) {
+    const url = `${ZELTY_BASE}/orders?restaurant_id=${restoId}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&expand[]=items&limit=200&offset=${offset}`;
+    const resp = await fetch(url, {headers:{"Authorization":`Bearer ${ZELTY_API_KEY}`}});
+    if (!resp.ok) throw new Error("Erreur Zelty: " + resp.status);
+    const data = await resp.json();
+    const orders = data.orders || [];
+    orders.forEach(order => {
+      (order.items || []).forEach(item => {
+        const name = item.name || "";
+        if (item.type === "dish") {
+          for (const prot in PROTEINES_SIG) {
+            if (PROTEINES_SIG[prot].includes(name)) counts[prot].sig += (item.quantity || 1);
+          }
+        }
+        (item.modifiers || []).forEach(mod => {
+          const mname = mod.name || "";
+          for (const prot in PROTEINES_OPT) {
+            if (PROTEINES_OPT[prot].includes(mname)) counts[prot].opt += 1;
+          }
+        });
+      });
+    });
+    offset += orders.length;
+    if (orders.length < 200) hasMore = false;
+  }
+  const ventes = {};
+  for (const p in counts) {
+    const total = counts[p].sig + counts[p].opt;
+    ventes[p] = {portions_sig:counts[p].sig, portions_opt:counts[p].opt, total_portions:total, grammage_theo_g:GRAMMAGES[p], theo_net_kg:Math.round(total*GRAMMAGES[p])/1000};
+  }
+  return ventes;
+}
 
 // ── Storage shim (localStorage) ───────────────────────────────────────────
 window.storage = {
@@ -939,12 +991,9 @@ function App() {
     const fetchVentes = async () => {
       setJourLoading(true);
       try {
-        const url = `${APPS_SCRIPT_URL}?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
-        const resp = await fetch(url);
-        const json = await resp.json();
-        if (json.ventes) setJourVentes(json.ventes);
-        else alert("Erreur: " + (json.error || "réponse invalide"));
-      } catch(e) { alert("Erreur réseau: " + e.message); }
+        const ventes = await fetchVentesZelty(jourRest, jourDate);
+        setJourVentes(ventes);
+      } catch(e) { alert("Erreur: " + e.message); }
       setJourLoading(false);
     };
 
