@@ -1075,11 +1075,12 @@ function App() {
           </div>
         </div>
 
-        {/* Date */}
+        {/* Date — fixe au jour J */}
         <div style={{marginBottom:16}}>
           <div style={{fontSize:10,fontWeight:700,color:"#888",textTransform:"uppercase",letterSpacing:".07em",marginBottom:6}}>Date</div>
-          <input type="date" value={jourDate} onChange={e=>{setJourDate(e.target.value);setJourVentes(null);setJourSaved({});window.storage.delete(SK.jourVentes);}}
-            style={{padding:"10px 14px",borderRadius:20,border:"1px solid #ddd",fontSize:14,background:"#fff",width:"100%",boxSizing:"border-box"}}/>
+          <div style={{padding:"10px 14px",borderRadius:20,border:"1px solid #ddd",fontSize:14,background:"#f5f5f5",color:"#333",fontWeight:600}}>
+            📅 {new Date().toLocaleDateString("fr-FR", {weekday:"long", day:"numeric", month:"long", year:"numeric"})}
+          </div>
         </div>
 
         {/* Récap statut */}
