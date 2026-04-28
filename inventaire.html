@@ -991,8 +991,9 @@ function App() {
     const fetchVentes = async () => {
       setJourLoading(true);
       try {
-        const url = `${APPS_SCRIPT_URL}?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
-        const resp = await fetch(url);
+        const PROXY = "https://instantaneous-indigestible-johan.ngrok-free.dev";
+        const url = `${PROXY}/?action=getVentesJour&restaurant=${encodeURIComponent(jourRest)}&date=${jourDate}&heure_debut=10:00&heure_fin=15:00`;
+        const resp = await fetch(url, {headers:{"ngrok-skip-browser-warning":"true"}});
         const json = await resp.json();
         if (json.ventes) setJourVentes(json.ventes);
         else alert("Erreur: " + (json.error || "réponse invalide"));
