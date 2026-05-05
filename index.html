@@ -375,8 +375,8 @@ function App() {
   const [mode,      setMode]      = useState("achats");
   const [jourData,  setJourData]  = useState([]);
   // Journalier UI
-  const [jourRest,  setJourRest]  = useState("Washington");
-  const [jourDate,  setJourDate]  = useState(new Date().toISOString().slice(0,10));
+  const [jourRest,  setJourRest]  = useState("Tous");
+  const [jourDate,  setJourDate]  = useState(""); // vide = toutes les dates
   const [jourProt,  setJourProt]  = useState("Toutes");
 
   // Achats UI
