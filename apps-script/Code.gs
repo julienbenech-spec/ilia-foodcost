@@ -229,7 +229,7 @@ function getVentesJour(params) {
   }
 
   // Calculer total portions et grammage théorique
-  var GRAMMAGES = { Saumon:100, Thon:80, Boeuf:70, Poulet:130 };
+  var GRAMMAGES = { Saumon:100, Thon:80, "Bœuf":80, Poulet:130 };
   var result = {};
   for (var p in counts) {
     var total = counts[p].sig + counts[p].opt;

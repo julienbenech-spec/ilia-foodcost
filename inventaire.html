@@ -30,7 +30,7 @@ const PROTEINES_OPT = {
   Boeuf:  ["Boeuf Effiloché","Boeuf effiloché","Boeuf snaké","Meat Bowl"],
   Poulet: ["Poulet mariné aux épices ♨️","Poulet Grillé","Poulet grillé"]
 };
-const GRAMMAGES = {Saumon:100, Thon:80, Boeuf:70, Poulet:130};
+const GRAMMAGES = {Saumon:100, Thon:80, Boeuf:80, Poulet:130};
 
 async function fetchVentesZelty(restaurant, date) {
   const restoId = ZELTY_RESTOS[restaurant];
@@ -111,7 +111,7 @@ const DEFAULT_PARAMS = {
       {name:"Cru filet",  coeff_cru:1.000},
       {name:"Cuit",       coeff_cru:1.200},
     ]},
-    {name:"Bœuf", grammage:70, coeff:0.550, etats:[
+    {name:"Bœuf", grammage:80, coeff:0.550, etats:[
       {name:"Cru",        coeff_cru:1.000},
       {name:"Cuit",       coeff_cru:1.818},
     ]},
