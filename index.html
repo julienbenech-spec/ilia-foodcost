@@ -497,8 +497,8 @@ function App() {
             return updated;
           });
         }
-        // Charger les achats depuis Sheets si disponibles
-        if (result.achatsData) {
+        // Charger les achats depuis Sheets — priorité absolue sur localStorage/INIT_ACHATS
+        if (result.achatsData && Object.keys(result.achatsData).length > 0) {
           setAchats(result.achatsData);
           persist(SK.achats, result.achatsData);
         }
@@ -1217,6 +1217,13 @@ function App() {
   // ════════════════════════════════════════════════════════════════════════
   const renderAchats=()=>(
     <>
+      {/* Bouton Sync bien visible en haut de l'onglet Achats */}
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:12}}>
+        <button onClick={()=>syncFromSheets(invData,transfers)} disabled={syncStatus==="loading"}
+          style={{fontSize:12,padding:"6px 14px",background:"#1565c0",color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,opacity:syncStatus==="loading"?0.6:1}}>
+          {syncStatus==="loading"?"🔄 Chargement…":"🔄 Charger depuis Sheets"}
+        </button>
+      </div>
       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
         <span style={{fontSize:11,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em"}}>Période</span>
         <div style={{display:"flex",gap:4}}>
