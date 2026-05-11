@@ -1326,8 +1326,170 @@ function App() {
     </>
   );
 
+  // ════════════════════════════════════════════════════════════════════════════
+  // PRIX VIEW
+  // ════════════════════════════════════════════════════════════════════════════
+  const renderPrix=()=>{
+    const PRIX_TEST = {
+      "Saumon": [
+        {mois:"Janvier 2026", prix:14.90, fournisseur:"J\'Océane"},
+        {mois:"Février 2026", prix:15.20, fournisseur:"J\'Océane"},
+        {mois:"Mars 2026",    prix:15.50, fournisseur:"J\'Océane"},
+        {mois:"Avril 2026",   prix:15.80, fournisseur:"J\'Océane"},
+        {mois:"Mai 2026",     prix:17.38, fournisseur:"J\'Océane"},
+      ],
+      "Thon": [
+        {mois:"Janvier 2026", prix:15.50, fournisseur:"J\'Océane"},
+        {mois:"Février 2026", prix:15.50, fournisseur:"J\'Océane"},
+        {mois:"Mars 2026",    prix:15.50, fournisseur:"J\'Océane"},
+        {mois:"Avril 2026",   prix:15.50, fournisseur:"J\'Océane"},
+        {mois:"Mai 2026",     prix:15.50, fournisseur:"J\'Océane"},
+      ],
+      "Bœuf": [
+        {mois:"Janvier 2026", prix:14.00, fournisseur:"Sablière"},
+        {mois:"Février 2026", prix:14.00, fournisseur:"Sablière"},
+        {mois:"Mars 2026",    prix:14.50, fournisseur:"Sablière"},
+        {mois:"Avril 2026",   prix:15.00, fournisseur:"Sablière"},
+        {mois:"Mai 2026",     prix:15.00, fournisseur:"Sablière"},
+      ],
+      "Poulet": [
+        {mois:"Janvier 2026", prix:7.30, fournisseur:"Sablière"},
+        {mois:"Février 2026", prix:7.30, fournisseur:"Sablière"},
+        {mois:"Mars 2026",    prix:7.30, fournisseur:"Sablière"},
+        {mois:"Avril 2026",   prix:7.30, fournisseur:"Sablière"},
+        {mois:"Mai 2026",     prix:7.30, fournisseur:"Sablière"},
+      ],
+    };
+
+    const proteines = ["Saumon","Thon","Bœuf","Poulet"];
+    const [prixTab, setPrixTab] = React.useState(proteines[0]);
+
+    const getVariation = (data, idx) => {
+      if (idx <= 0 || idx >= data.length) return null;
+      const prev = data[idx-1].prix;
+      const curr = data[idx].prix;
+      return prev > 0 ? ((curr - prev) / prev) * 100 : null;
+    };
+
+    const getVariationStyle = (variation) => {
+      if (variation === null) return {bg:"#f5f5f5", text:"#888", badge:"—"};
+      if (variation > 5)  return {bg:"#ffebee", text:"#c62828", badge:"⚠️ Hausse"};
+      if (variation > 2)  return {bg:"#fff8e1", text:"#f57f17", badge:"↑ Attention"};
+      return                     {bg:"#e8f5e9", text:"#2e7d32", badge:"✓ Stable"};
+    };
+
+    // Cards résumé
+    const cards = proteines.map(prot => {
+      const data = PRIX_TEST[prot] || [];
+      const last = data[data.length - 1];
+      const variation = data.length >= 2 ? getVariation(data, data.length - 1) : null;
+      const vstyle = getVariationStyle(variation);
+      return {prot, last, variation, vstyle};
+    });
+
+    // Données protéine active pour tableau (ordre inversé = plus récent en haut)
+    const activeData = [...(PRIX_TEST[prixTab] || [])].reverse();
+
+    return (
+      <div>
+        {/* Cards résumé */}
+        <div style={{display:"flex",gap:12,marginBottom:24,flexWrap:"wrap"}}>
+          {cards.map(({prot, last, variation, vstyle}) => (
+            <div key={prot} onClick={()=>setPrixTab(prot)}
+              style={{flex:1,minWidth:160,background:"#fff",borderRadius:12,
+                border:`2px solid ${prixTab===prot?"#1a237e":"#e0e0e0"}`,
+                padding:"14px 16px",cursor:"pointer",
+                boxShadow:prixTab===prot?"0 2px 8px rgba(26,35,126,.15)":"none",
+                transition:"all .15s"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                <div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#111"}}>{prot}</div>
+                  <div style={{fontSize:11,color:"#888",marginTop:2}}>{last?.fournisseur||"—"}</div>
+                </div>
+                {variation !== null && variation > 5 && (
+                  <span style={{fontSize:11,background:"#ffebee",color:"#c62828",padding:"3px 8px",borderRadius:6,fontWeight:700,whiteSpace:"nowrap"}}>⚠️ Alerte</span>
+                )}
+              </div>
+              <div style={{fontSize:24,fontWeight:700,color:"#1a237e",marginBottom:8}}>
+                {last ? last.prix.toFixed(2)+" €/kg" : "—"}
+              </div>
+              {variation !== null ? (
+                <div style={{display:"inline-flex",alignItems:"center",gap:4,background:vstyle.bg,color:vstyle.text,padding:"4px 12px",borderRadius:20,fontSize:12,fontWeight:700}}>
+                  {variation >= 0 ? "+" : ""}{variation.toFixed(1)}% vs mois préc.
+                </div>
+              ) : (
+                <div style={{fontSize:11,color:"#bbb"}}>Pas de mois précédent</div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs protéines */}
+        <div style={{display:"flex",gap:0,marginBottom:16,borderBottom:"2px solid #f0f0ee"}}>
+          {proteines.map(prot => (
+            <button key={prot} onClick={()=>setPrixTab(prot)}
+              style={{padding:"9px 18px",fontSize:13,fontWeight:prixTab===prot?700:400,
+                background:"transparent",border:"none",
+                borderBottom:prixTab===prot?"3px solid #1a237e":"3px solid transparent",
+                color:prixTab===prot?"#1a237e":"#888",cursor:"pointer",marginBottom:-2,
+                transition:"all .15s"}}>
+              {prot}
+            </button>
+          ))}
+        </div>
+
+        {/* Tableau historique */}
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+            <thead>
+              <tr style={{background:"#1a237e"}}>
+                {["Mois","Fournisseur","Prix / kg","Variation","Statut"].map(h=>(
+                  <th key={h} style={{padding:"10px 14px",color:"#fff",textAlign:"left",fontWeight:600,fontSize:12,whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {activeData.map((row, i) => {
+                const origIdx = (PRIX_TEST[prixTab]||[]).length - 1 - i;
+                const variation = origIdx > 0 ? getVariation(PRIX_TEST[prixTab], origIdx) : null;
+                const vstyle = getVariationStyle(variation);
+                return (
+                  <tr key={row.mois} style={{background:vstyle.bg,borderBottom:"1px solid #f0f0f0"}}>
+                    <td style={{padding:"10px 14px",fontWeight:i===0?700:400,color:i===0?"#1a237e":"#111"}}>
+                      {row.mois}
+                      {i===0&&<span style={{marginLeft:8,fontSize:10,background:"#e8eaf6",color:"#1a237e",padding:"2px 7px",borderRadius:4,fontWeight:700}}>Dernier</span>}
+                    </td>
+                    <td style={{padding:"10px 14px",color:"#555"}}>{row.fournisseur}</td>
+                    <td style={{padding:"10px 14px",fontWeight:700,color:vstyle.text}}>{row.prix.toFixed(2)} €</td>
+                    <td style={{padding:"10px 14px"}}>
+                      {variation !== null ? (
+                        <span style={{background:vstyle.bg,color:vstyle.text,padding:"3px 10px",borderRadius:12,fontWeight:700,fontSize:12,border:`1px solid ${vstyle.text}22`}}>
+                          {variation >= 0 ? "+" : ""}{variation.toFixed(1)}%
+                        </span>
+                      ) : <span style={{color:"#ccc",fontSize:12}}>—</span>}
+                    </td>
+                    <td style={{padding:"10px 14px"}}>
+                      {variation !== null ? (
+                        <span style={{background:vstyle.bg,color:vstyle.text,padding:"3px 10px",borderRadius:12,fontWeight:600,fontSize:12,border:`1px solid ${vstyle.text}22`}}>
+                          {vstyle.badge}
+                        </span>
+                      ) : <span style={{color:"#ccc",fontSize:12}}>—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div style={{marginTop:10,fontSize:10,color:"#bbb",fontStyle:"italic"}}>
+          * Données de test — branchement réel depuis les achats à venir
+        </div>
+      </div>
+    );
+  };
+
   // ── RENDER ────────────────────────────────────────────────────────────────
-  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"journalier",label:"📅 Journalier"},{id:"params",label:"⚙️ Paramètres"}];
+  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"journalier",label:"📅 Journalier"},{id:"prix",label:"📊 Variation des prix"},{id:"params",label:"⚙️ Paramètres"}];
 
   if(!isLoaded) return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:200,gap:12}}>
@@ -1350,7 +1512,7 @@ function App() {
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",color:"#aaa",textTransform:"uppercase",marginBottom:1}}>ILIA · Food Cost</div>
-          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",journalier:"Inventaire journalier",params:"Paramètres"}[mode]}</div>
+          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",journalier:"Inventaire journalier",prix:"Suivi des prix fournisseurs",params:"Paramètres"}[mode]}</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {saved&&<span style={{fontSize:11,color:"#059669"}}>✓ Sauvegardé</span>}
@@ -1377,6 +1539,7 @@ function App() {
         </div>
       )}
       {mode==="journalier" && renderJournalier()}
+      {mode==="prix"      && renderPrix()}
       {mode==="params" && renderParams()}
 
       <div style={{marginTop:20,fontSize:10,color:"#ddd",textAlign:"center"}}>ILIA Groupe © 2026</div>
