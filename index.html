@@ -32,143 +32,13 @@ async function saveInventory(restaurant, semaine, proteine, inv_fin, inv_debut) 
   } catch(e) { return false; }
 }
 
-const ZELTY_DATA = {"Washington": {"S06": {"Saumon": {"portions_sig": 76, "portions_opt": 131, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 89, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 90, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 203, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 73, "portions_opt": 127, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 86, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 57, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 87, "portions_opt": 228, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 85, "portions_opt": 123, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 86, "portions_opt": 61, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 66, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 193, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 61, "portions_opt": 110, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 92, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 67, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 84, "portions_opt": 194, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 62, "portions_opt": 113, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 58, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 69, "portions_opt": 201, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 73, "portions_opt": 135, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 93, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 61, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 216, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 60, "portions_opt": 142, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 103, "portions_opt": 78, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 72, "portions_opt": 167, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 51, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 57, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 65, "portions_opt": 244, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 68, "portions_opt": 142, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 84, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 226, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 42, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 1.135}, "Thon": {"portions_sig": 78, "portions_opt": 58, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 4.581}, "Bœuf": {"portions_sig": 46, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 6.792}, "Poulet": {"portions_sig": 73, "portions_opt": 190, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 14.899}}, "S16": {"Saumon": {"portions_sig": 69, "portions_opt": 158, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 127, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 26, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 242, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 62, "portions_opt": 115, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 73, "portions_opt": 69, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 32, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 59, "portions_opt": 218, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Mathurins": {"S06": {"Saumon": {"portions_sig": 47, "portions_opt": 105, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 68, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 50, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 140, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 62, "portions_opt": 93, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 78, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 137, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 57, "portions_opt": 84, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 72, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 148, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 60, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 42, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 67, "portions_opt": 112, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 54, "portions_opt": 87, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 101, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 171, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 62, "portions_opt": 92, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 82, "portions_opt": 57, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 64, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 162, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 46, "portions_opt": 87, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 112, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 22, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 134, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 54, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 107, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 69, "portions_opt": 86, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 72, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 51, "portions_opt": 85, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 81, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 37, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 156, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 74, "portions_opt": 114, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 109, "portions_opt": 69, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 100, "portions_opt": 165, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 52, "portions_opt": 101, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 54, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 60, "portions_opt": 182, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Riviere": {"S06": {"Saumon": {"portions_sig": 52, "portions_opt": 119, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 80, "portions_opt": 46, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 51, "portions_opt": 68, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 75, "portions_opt": 159, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 64, "portions_opt": 111, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 105, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 31, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 94, "portions_opt": 164, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 70, "portions_opt": 117, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 106, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 47, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 70, "portions_opt": 124, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 58, "portions_opt": 126, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 105, "portions_opt": 44, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 91, "portions_opt": 144, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 79, "portions_opt": 143, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 59, "portions_opt": 81, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 82, "portions_opt": 176, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 67, "portions_opt": 124, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 43, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 40, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 173, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 86, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 101, "portions_opt": 52, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 60, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 95, "portions_opt": 166, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 67, "portions_opt": 132, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 127, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 28, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 181, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 67, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 119, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 63, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 88, "portions_opt": 161, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 41, "portions_opt": 116, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 123, "portions_opt": 64, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 67, "portions_opt": 160, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 85, "portions_opt": 154, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 61, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 31, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 200, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 64, "portions_opt": 146, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 127, "portions_opt": 67, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 68, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 63, "portions_opt": 177, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Casanova": {"S06": {"Saumon": {"portions_sig": 76, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 43, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 206, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 57, "portions_opt": 109, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 81, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 42, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 102, "portions_opt": 207, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 75, "portions_opt": 121, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 94, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 95, "portions_opt": 209, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 60, "portions_opt": 101, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 90, "portions_opt": 35, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 102, "portions_opt": 193, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 68, "portions_opt": 122, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 89, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 80, "portions_opt": 192, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 65, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 92, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 75, "portions_opt": 198, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 69, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 74, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 105, "portions_opt": 221, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 76, "portions_opt": 125, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 94, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 116, "portions_opt": 192, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 68, "portions_opt": 146, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 72, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 55, "portions_opt": 82, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 225, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 45, "portions_opt": 118, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 107, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 57, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 76, "portions_opt": 205, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 95, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 102, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 53, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 294, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 70, "portions_opt": 132, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 71, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 40, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 50, "portions_opt": 237, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Vernier": {"S06": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 21, "portions_opt": 48, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 34, "portions_opt": 12, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 9, "portions_opt": 17, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 31, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 66, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 30, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 125, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 72, "portions_opt": 149, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 63, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 70, "portions_opt": 100, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 82, "portions_opt": 207, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 77, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 124, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 66, "portions_opt": 109, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 85, "portions_opt": 205, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 77, "portions_opt": 153, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 135, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 71, "portions_opt": 95, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 93, "portions_opt": 247, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 103, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 115, "portions_opt": 80, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 67, "portions_opt": 94, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 250, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 88, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 58, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 237, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 73, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 145, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 62, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 104, "portions_opt": 258, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 78, "portions_opt": 138, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 109, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 60, "portions_opt": 98, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 198, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 115, "portions_opt": 166, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 137, "portions_opt": 80, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 80, "portions_opt": 17, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 117, "portions_opt": 274, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 102, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 137, "portions_opt": 69, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 76, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 90, "portions_opt": 296, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}};
+const ZELTY_DATA = {"Washington": {"S06": {"Saumon": {"portions_sig": 76, "portions_opt": 131, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 89, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 90, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 203, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 73, "portions_opt": 127, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 86, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 57, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 87, "portions_opt": 228, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 85, "portions_opt": 123, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 86, "portions_opt": 61, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 66, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 193, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 61, "portions_opt": 110, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 92, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 67, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 84, "portions_opt": 194, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 62, "portions_opt": 113, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 58, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 69, "portions_opt": 201, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 73, "portions_opt": 135, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 93, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 61, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 216, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 60, "portions_opt": 142, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 103, "portions_opt": 78, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 72, "portions_opt": 167, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 51, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 57, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 65, "portions_opt": 244, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 68, "portions_opt": 142, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 84, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 226, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 42, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 1.135}, "Thon": {"portions_sig": 78, "portions_opt": 58, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 4.581}, "Bœuf": {"portions_sig": 46, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 6.792}, "Poulet": {"portions_sig": 73, "portions_opt": 190, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 14.899}}, "S16": {"Saumon": {"portions_sig": 69, "portions_opt": 158, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 127, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 26, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 242, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 69, "portions_opt": 130, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 89, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 60, "portions_opt": 32, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 74, "portions_opt": 268, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S18": {"Saumon": {"portions_sig": 53, "portions_opt": 130, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 36, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 50, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 62, "portions_opt": 220, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S19": {"Saumon": {"portions_sig": 58, "portions_opt": 105, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 90, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 26, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 45, "portions_opt": 241, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S20": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Mathurins": {"S06": {"Saumon": {"portions_sig": 47, "portions_opt": 105, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 68, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 50, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 140, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 62, "portions_opt": 93, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 78, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 137, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 57, "portions_opt": 84, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 72, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 148, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 49, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 82, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 37, "portions_opt": 41, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 51, "portions_opt": 89, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 54, "portions_opt": 87, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 101, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 171, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 62, "portions_opt": 92, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 82, "portions_opt": 57, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 64, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 162, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 46, "portions_opt": 87, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 112, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 22, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 134, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 54, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 107, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 48, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 69, "portions_opt": 86, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 88, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 72, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 51, "portions_opt": 85, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 81, "portions_opt": 53, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 37, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 156, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 74, "portions_opt": 114, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 109, "portions_opt": 69, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 100, "portions_opt": 165, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 62, "portions_opt": 117, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 114, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 59, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 225, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S18": {"Saumon": {"portions_sig": 65, "portions_opt": 91, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 117, "portions_opt": 46, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 44, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 85, "portions_opt": 147, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S19": {"Saumon": {"portions_sig": 35, "portions_opt": 92, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 83, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 31, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 61, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S20": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Riviere": {"S06": {"Saumon": {"portions_sig": 52, "portions_opt": 119, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 80, "portions_opt": 46, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 51, "portions_opt": 68, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 75, "portions_opt": 159, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 64, "portions_opt": 111, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 105, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 31, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 94, "portions_opt": 164, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 70, "portions_opt": 117, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 106, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 47, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 70, "portions_opt": 124, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 58, "portions_opt": 126, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 105, "portions_opt": 44, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 49, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 91, "portions_opt": 144, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 79, "portions_opt": 143, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 38, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 59, "portions_opt": 81, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 82, "portions_opt": 176, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 67, "portions_opt": 124, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 43, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 40, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 173, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 86, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 101, "portions_opt": 52, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 60, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 95, "portions_opt": 166, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 67, "portions_opt": 132, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 127, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 28, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 71, "portions_opt": 181, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 67, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 119, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 63, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 88, "portions_opt": 161, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 41, "portions_opt": 116, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 123, "portions_opt": 64, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 60, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 67, "portions_opt": 160, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 85, "portions_opt": 154, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 61, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 31, "portions_opt": 49, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 200, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 87, "portions_opt": 166, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 152, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 74, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 78, "portions_opt": 208, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S18": {"Saumon": {"portions_sig": 64, "portions_opt": 153, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 106, "portions_opt": 59, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 62, "portions_opt": 162, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S19": {"Saumon": {"portions_sig": 66, "portions_opt": 103, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 85, "portions_opt": 52, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 62, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 73, "portions_opt": 195, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S20": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Casanova": {"S06": {"Saumon": {"portions_sig": 76, "portions_opt": 120, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 43, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 206, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 57, "portions_opt": 109, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 81, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 42, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 102, "portions_opt": 207, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 75, "portions_opt": 121, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 94, "portions_opt": 51, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 52, "portions_opt": 71, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 95, "portions_opt": 209, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 60, "portions_opt": 101, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 90, "portions_opt": 35, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 102, "portions_opt": 193, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 68, "portions_opt": 122, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 95, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 89, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 80, "portions_opt": 192, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 65, "portions_opt": 139, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 92, "portions_opt": 56, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 43, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 75, "portions_opt": 198, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 69, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 97, "portions_opt": 55, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 74, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 105, "portions_opt": 221, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 76, "portions_opt": 125, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 94, "portions_opt": 65, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 79, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 116, "portions_opt": 192, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 68, "portions_opt": 146, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 72, "portions_opt": 47, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 55, "portions_opt": 82, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 225, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 45, "portions_opt": 118, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 107, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 57, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 76, "portions_opt": 205, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 95, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 102, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 53, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 77, "portions_opt": 294, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 76, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 84, "portions_opt": 66, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 46, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 63, "portions_opt": 265, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S18": {"Saumon": {"portions_sig": 81, "portions_opt": 107, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 85, "portions_opt": 52, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 38, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 226, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S19": {"Saumon": {"portions_sig": 81, "portions_opt": 92, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 48, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 41, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 211, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S20": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}, "Vernier": {"S06": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S07": {"Saumon": {"portions_sig": 21, "portions_opt": 48, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 34, "portions_opt": 12, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 9, "portions_opt": 17, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 31, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S08": {"Saumon": {"portions_sig": 66, "portions_opt": 96, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 79, "portions_opt": 30, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 45, "portions_opt": 62, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 86, "portions_opt": 125, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S09": {"Saumon": {"portions_sig": 72, "portions_opt": 149, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 63, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 70, "portions_opt": 100, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 82, "portions_opt": 207, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S10": {"Saumon": {"portions_sig": 77, "portions_opt": 152, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 124, "portions_opt": 70, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 66, "portions_opt": 109, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 85, "portions_opt": 205, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S11": {"Saumon": {"portions_sig": 77, "portions_opt": 153, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 135, "portions_opt": 54, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 71, "portions_opt": 95, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 93, "portions_opt": 247, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S12": {"Saumon": {"portions_sig": 103, "portions_opt": 157, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 115, "portions_opt": 80, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 67, "portions_opt": 94, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 98, "portions_opt": 250, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S13": {"Saumon": {"portions_sig": 88, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 128, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 58, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 79, "portions_opt": 237, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S14": {"Saumon": {"portions_sig": 73, "portions_opt": 168, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 145, "portions_opt": 77, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 62, "portions_opt": 99, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 104, "portions_opt": 258, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S15": {"Saumon": {"portions_sig": 78, "portions_opt": 138, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 109, "portions_opt": 76, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 60, "portions_opt": 98, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 81, "portions_opt": 198, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S16": {"Saumon": {"portions_sig": 115, "portions_opt": 166, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 137, "portions_opt": 80, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 80, "portions_opt": 17, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 117, "portions_opt": 274, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S17": {"Saumon": {"portions_sig": 118, "portions_opt": 187, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 159, "portions_opt": 80, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 88, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 103, "portions_opt": 326, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S18": {"Saumon": {"portions_sig": 95, "portions_opt": 154, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 124, "portions_opt": 85, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 64, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 84, "portions_opt": 253, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S19": {"Saumon": {"portions_sig": 79, "portions_opt": 126, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 123, "portions_opt": 75, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 53, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 80, "portions_opt": 231, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}, "S20": {"Saumon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Thon": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Bœuf": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}, "Poulet": {"portions_sig": 0, "portions_opt": 0, "cmd_brut": 0, "inv_debut": 0, "inv_fin": 0}}}};
 const TRANSFERS_DATA = [{"semaine": "S15", "from": "Washington", "to": "Vernier", "proteine": "Poulet", "qty_cuit": 1.891, "qty_net": 3.026, "date": "2026-04-10"}];
 
 window.storage = {
   get: async (key) => { const v = localStorage.getItem(key); return v ? {value: v} : null; },
   set: async (key, val) => { localStorage.setItem(key, val); },
   delete: async (key) => { localStorage.removeItem(key); },
-};
-
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx12yVp8X6mwYtU6nrjcDclyAYQCustfx_3Xoau4RRc0mIFo03-712urnNGkLh0ETlbKQ/exec";
-
-// Écriture vers Apps Script via GET + param "data" (contourne CORS)
-const syncToSheets = (payload) => {
-  try {
-    const encoded = encodeURIComponent(JSON.stringify(payload));
-    fetch(`${APPS_SCRIPT_URL}?data=${encoded}`).catch(e => console.warn("syncToSheets failed:", e));
-  } catch(e) {
-    console.warn("syncToSheets error:", e);
-  }
-};
-
-const sheetsRowsToInvData = (rows) => {
-  const invData = {};
-  rows.forEach(row => {
-    const key = `inv${row.type}__${row.restaurant}__${row.semaine}`;
-    if (!invData[key]) invData[key] = {};
-    if (!invData[key][row.proteine]) invData[key][row.proteine] = {lines: []};
-    if (row.etat || row.poids_brut) {
-      invData[key][row.proteine].lines.push({
-        etat: row.etat || "",
-        poids_brut: parseFloat(row.poids_brut) || 0,
-        tare: parseFloat(row.tare) || 0
-      });
-    }
-  });
-  return invData;
-};
-
-const sheetsRowsToTransfers = (rows) => rows.map((row, i) => ({
-  id: row.timestamp ? new Date(row.timestamp).getTime() : Date.now() + i,
-  from: row.from, to: row.to, sem: row.semaine, prot: row.prot,
-  etat: row.etat, poids_brut: parseFloat(row.poids_brut) || 0,
-  tare: parseFloat(row.tare) || 0, qty_net: parseFloat(row.qty_net) || 0,
-  note: row.note || "", date: row.date || ""
-}));
-
-const loadZeltyFromSheets = async () => {
-  try {
-    const resp = await fetch(`${APPS_SCRIPT_URL}?action=getZelty`);
-    const json = await resp.json();
-    const rows = json.rows || [];
-    if (rows.length === 0) return { data: {}, ok: false };
-    const data = {};
-    rows.forEach(row => {
-      const resto = row.restaurant;
-      const sem = row.semaine;
-      const prot = row.proteine;
-      if (!data[resto]) data[resto] = {};
-      if (!data[resto][sem]) data[resto][sem] = {};
-      data[resto][sem][prot] = {
-        portions_sig: parseFloat(row.portions_sig) || 0,
-        portions_opt: parseFloat(row.portions_opt) || 0,
-        cmd_brut: 0, inv_debut: 0, inv_fin: 0
-      };
-    });
-    return { data, ok: true };
-  } catch(e) {
-    console.warn("loadZeltyFromSheets failed:", e);
-    return { data: {}, ok: false };
-  }
-};
-
-const loadInventaireJourFromSheets = async () => {
-  try {
-    const resp = await fetch(`${APPS_SCRIPT_URL}?action=getInventaireJour`);
-    const json = await resp.json();
-    return json.rows || [];
-  } catch(e) {
-    console.warn("loadInventaireJour failed:", e);
-    return [];
-  }
-};
-
-const loadAchatsFromSheets = async () => {
-  try {
-    const resp = await fetch(`${APPS_SCRIPT_URL}?action=getAchats`);
-    const json = await resp.json();
-    if (!json.rows || json.rows.length === 0) return null;
-    // Convertir rows → format INIT_ACHATS
-    const achats = {};
-    json.rows.forEach(row => {
-      // Normaliser le mois : "janvier 2026" → "Janvier 2026"
-      const moisNorm = row.mois ? row.mois.replace(/^(\w)/, c => c.toUpperCase()) : row.mois;
-      const key = `${row.fournisseur}__${row.restaurant}__${moisNorm}`;
-      if (!achats[key]) achats[key] = [];
-      achats[key].push({
-        ingredient: row.article,
-        qty: parseFloat(row.qty) || 0,
-        unit: row.unite || "",
-        montant: parseFloat(row.montant_ht) || 0
-      });
-    });
-    return achats;
-  } catch(e) {
-    console.warn("loadAchatsFromSheets failed:", e);
-    return null;
-  }
-};
-
-const loadFromSheets = async (currentInvData, currentTransfers) => {
-  try {
-    const [invResp, transResp, zeltyResult, achatsFromSheets, jourRows] = await Promise.all([
-      fetch(`${APPS_SCRIPT_URL}?action=getInventaire`),
-      fetch(`${APPS_SCRIPT_URL}?action=getTransferts`),
-      loadZeltyFromSheets(),
-      loadAchatsFromSheets(),
-      loadInventaireJourFromSheets()
-    ]);
-    const invJson = await invResp.json();
-    const transJson = await transResp.json();
-    const sheetsInv = sheetsRowsToInvData(invJson.rows || []);
-    const sheetsTrans = sheetsRowsToTransfers(transJson.rows || []);
-    // Merge: start from localStorage, then overlay Sheets data (Sheets has priority)
-    const mergedInv = {...(currentInvData || {})};
-    Object.entries(sheetsInv).forEach(([key, prots]) => {
-      mergedInv[key] = {...(mergedInv[key] || {})};
-      Object.entries(prots).forEach(([prot, data]) => {
-        mergedInv[key][prot] = data; // Sheets overrides
-      });
-    });
-    // For transfers: if Sheets returned data, use Sheets; otherwise keep localStorage
-    const mergedTrans = sheetsTrans.length > 0 ? sheetsTrans : (currentTransfers || []);
-    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, achatsData: achatsFromSheets, jourData: jourRows || [], ok: true};
-  } catch(e) {
-    console.warn("loadFromSheets failed, using localStorage only:", e);
-    return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, achatsData: null, jourData: [], ok: false};
-  }
 };
 
 
@@ -199,9 +69,9 @@ const DEFAULT_PARAMS = {
       {name:"Cru filet",  coeff_cru:1.000},
       {name:"Cuit",       coeff_cru:1.200},
     ]},
-    {name:"Bœuf", grammage:80, coeff:0.550, etats:[
+    {name:"Bœuf", grammage:70, coeff:0.550, etats:[
       {name:"Cru",        coeff_cru:1.000},
-      {name:"Cuit",       coeff_cru:1.325},
+      {name:"Cuit",       coeff_cru:1.818},
     ]},
     {name:"Poulet", grammage:130, coeff:0.625, etats:[
       {name:"Cru",        coeff_cru:1.000},
@@ -371,13 +241,7 @@ function App() {
   const [forceManual,setForceManual]=useState({});
   const [isLoaded,  setIsLoaded]  = useState(false);
   const [saved,     setSaved]     = useState(false);
-  const [syncStatus, setSyncStatus] = useState("idle"); // "idle"|"loading"|"ok"|"error"
   const [mode,      setMode]      = useState("achats");
-  const [jourData,  setJourData]  = useState([]);
-  // Journalier UI
-  const [jourRest,  setJourRest]  = useState("Tous");
-  const [jourDate,  setJourDate]  = useState(""); // vide = toutes les dates
-  const [jourProt,  setJourProt]  = useState("Toutes");
 
   // Achats UI
   const [tab,        setTab]        = useState("Cercle Vert");
@@ -398,54 +262,6 @@ function App() {
   const [invMobileSection, setInvMobileSection] = useState("debut"); // debut | fin | transfert
   const [invMobileProtIdx, setInvMobileProtIdx] = useState(0);
 
-  // ── Sync from Sheets (callable manually) ──
-  const syncFromSheets = useCallback(async (currentInvData, currentTransfers) => {
-    setSyncStatus("loading");
-    const result = await loadFromSheets(currentInvData, currentTransfers);
-    if (result.ok) {
-      setInvData(result.invData);
-      persist(SK.inv, result.invData);
-      setTransfers(result.transfers);
-      persist(SK.trans, result.transfers);
-      // Merger les données Zelty depuis Sheets dans ctrlData (SANS écraser cmd_brut saisi manuellement)
-      if (result.zeltyOk && Object.keys(result.zeltyData).length > 0) {
-        setCtrlData(prev => {
-          const updated = {...prev};
-          try {
-            Object.entries(result.zeltyData).forEach(([resto, weeks]) => {
-              Object.entries(weeks).forEach(([sem, prots]) => {
-                const key = "ctrl__" + resto + "__" + sem;
-                if (!updated[key]) updated[key] = {};
-                Object.entries(prots).forEach(([prot, vals]) => {
-                  if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
-                  updated[key][prot].portions_sig = vals.portions_sig;
-                  updated[key][prot].portions_opt = vals.portions_opt;
-                  // Ne pas écraser cmd_brut, inv_debut, inv_fin (saisis manuellement)
-                });
-              });
-            });
-          } catch(e) {}
-          return updated;
-        });
-      }
-      // Charger les achats depuis Sheets si disponibles
-      if (result.achatsData) {
-        setAchats(result.achatsData);
-        persist(SK.achats, result.achatsData);
-      }
-      // Charger inventaire journalier
-      if (result.jourData) {
-        setJourData(result.jourData);
-      }
-      setSyncStatus("ok");
-      setTimeout(() => setSyncStatus("idle"), 3000);
-    } else {
-      setSyncStatus("error");
-      setTimeout(() => setSyncStatus("idle"), 3000);
-    }
-    return result;
-  }, [persist]);
-
   // ── Storage ──
   useEffect(()=>{
     (async()=>{
@@ -453,68 +269,19 @@ function App() {
         try{ const r=await window.storage.get(key); if(r&&r.value) setter(JSON.parse(r.value)); else if(fallback!==undefined) setter(fallback); }
         catch{ if(fallback!==undefined) setter(fallback); }
       };
-      // Load localStorage first
-      let localInv = {};
-      let localTrans = [];
-      const loadInv = async () => { try{ const r=await window.storage.get(SK.inv); if(r&&r.value){ localInv=JSON.parse(r.value); setInvData(localInv); } } catch{} };
-      const loadTrans = async () => { try{ const r=await window.storage.get(SK.trans); if(r&&r.value){ localTrans=JSON.parse(r.value); setTransfers(localTrans); } } catch{} };
       await Promise.all([
         load(SK.achats,setAchats,INIT_ACHATS),
         load(SK.params,setParams,DEFAULT_PARAMS),
-        loadInv(),
+        load(SK.inv,setInvData,{}),
         load(SK.ctrl,setCtrlData,{}),
-        loadTrans(),
+        load(SK.trans,setTransfers,[]),
         load(SK.validated,setValidated,{}),
         load(SK.force,setForceManual,{}),
       ]);
       setIsLoaded(true);
-      // Then try to sync from Sheets (silently, Sheets has priority)
-      setSyncStatus("loading");
-      const result = await loadFromSheets(localInv, localTrans);
-      if (result.ok) {
-        setInvData(result.invData);
-        persist(SK.inv, result.invData);
-        setTransfers(result.transfers);
-        persist(SK.trans, result.transfers);
-        // Merger les données Zelty depuis Sheets dans ctrlData (SANS écraser cmd_brut saisi manuellement)
-        if (result.zeltyOk && Object.keys(result.zeltyData).length > 0) {
-          setCtrlData(prev => {
-            const updated = {...prev};
-            try {
-              Object.entries(result.zeltyData).forEach(([resto, weeks]) => {
-                Object.entries(weeks).forEach(([sem, prots]) => {
-                  const key = "ctrl__" + resto + "__" + sem;
-                  if (!updated[key]) updated[key] = {};
-                  Object.entries(prots).forEach(([prot, vals]) => {
-                    if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
-                    updated[key][prot].portions_sig = vals.portions_sig;
-                    updated[key][prot].portions_opt = vals.portions_opt;
-                    // Ne pas écraser cmd_brut, inv_debut, inv_fin (saisis manuellement)
-                  });
-                });
-              });
-            } catch(e) {}
-            return updated;
-          });
-        }
-        // Charger les achats depuis Sheets si disponibles
-        if (result.achatsData) {
-          setAchats(result.achatsData);
-          persist(SK.achats, result.achatsData);
-        }
-        // Charger inventaire journalier
-        if (result.jourData) {
-          setJourData(result.jourData);
-        }
-        setSyncStatus("ok");
-        setTimeout(() => setSyncStatus("idle"), 3000);
-      } else {
-        setSyncStatus("idle");
-      }
     })();
   },[]);
 
-  // fallback si Sheets vide : applique ZELTY_DATA hardcodé uniquement si portions_sig === 0 (non rempli par Sheets)
   useEffect(()=>{
     if(!isLoaded) return;
     setCtrlData(prev => {
@@ -526,15 +293,10 @@ function App() {
             if (!updated[key]) updated[key] = {};
             Object.entries(prots).forEach(([prot, vals]) => {
               if (!updated[key][prot]) updated[key][prot] = {portions_sig:0,portions_opt:0,cmd_brut:0,inv_debut:0,inv_fin:0};
-              // Fallback : on n'écrase que si Sheets n'a pas déjà rempli les portions (portions_sig === 0)
-              if (!updated[key][prot].portions_sig && !updated[key][prot].portions_opt) {
-                updated[key][prot].portions_sig = vals.portions_sig;
-                updated[key][prot].portions_opt = vals.portions_opt;
-              }
-              // inv_fin si disponible dans les données hardcodées (données historiques)
-              if(vals.inv_fin !== undefined && vals.inv_fin !== 0 && !updated[key][prot].inv_fin) {
-                updated[key][prot].inv_fin = vals.inv_fin;
-              }
+              updated[key][prot].portions_sig = vals.portions_sig;
+              updated[key][prot].portions_opt = vals.portions_opt;
+              // inv_fin si disponible
+              if(vals.inv_fin !== undefined) updated[key][prot].inv_fin = vals.inv_fin;
             });
           });
         });
@@ -576,12 +338,7 @@ function App() {
   const prevHasFin=(rest,sem)=>{ const prev=prevWeek(sem); if(!prev) return false; return params.proteines.some(pp=>getLines(finKey(rest,prev),pp.name).length>0); };
   const isManualDeb=(rest,sem)=>forceManual[`${rest}__${sem}`]||!prevHasFin(rest,sem);
   const getDebutLines=(rest,sem,prot)=>{ if(isManualDeb(rest,sem)) return getLines(debKey(rest,sem),prot); const prev=prevWeek(sem); return getLines(finKey(rest,prev||""),prot); };
-  // Transferts entrants de la semaine précédente → s'ajoutent au début de cette semaine
-  const getTransfersInFromPrevWeek=(rest,sem,prot)=>{
-    const prev=prevWeek(sem); if(!prev) return 0;
-    return transfers.filter(t=>t.to===rest&&t.sem===prev&&t.prot===prot).reduce((s,t)=>s+t.qty_net,0);
-  };
-  const getDebutTotal=(rest,sem,prot)=>calcTotalFromLines(getDebutLines(rest,sem,prot),prot,params)+getTransfersInFromPrevWeek(rest,sem,prot);
+  const getDebutTotal=(rest,sem,prot)=>calcTotalFromLines(getDebutLines(rest,sem,prot),prot,params);
   const getFinTotal  =(rest,sem,prot)=>calcTotalFromLines(getLines(finKey(rest,sem),prot),prot,params);
 
   const isValidated  =key=>!!validated[key];
@@ -631,17 +388,6 @@ function App() {
     if(!form.ingredient.trim()||!form.montant) return;
     const k=`${form.fournisseur}__${form.restaurant}__${form.mois}`;
     saveAchats({...achats,[k]:[...(achats[k]||[]),{ingredient:form.ingredient.trim(),montant:parseFloat(form.montant),qty:form.qty?parseFloat(form.qty):0,unit:form.unit||""}]});
-    syncToSheets({
-      action: "saveAchat",
-      fournisseur: form.fournisseur,
-      restaurant: form.restaurant,
-      mois: form.mois,
-      article: form.ingredient.trim(),
-      qty: parseFloat(form.qty) || 0,
-      unite: form.unit || "",
-      montant_ht: parseFloat(form.montant),
-      source: "Manuel"
-    });
     setForm(f=>({...f,ingredient:"",montant:"",qty:"",unit:""}));
   };
   const delAchatLine=(k,i)=>{ const a=[...(achats[k]||[])]; a.splice(i,1); saveAchats({...achats,[k]:a}); };
@@ -945,95 +691,6 @@ function App() {
   // ════════════════════════════════════════════════════════════════════════
   // CONTRÔLE VIEW
   // ════════════════════════════════════════════════════════════════════════
-  const renderJournalier=()=>{
-    const today = new Date().toISOString().slice(0,10);
-    const proteinesNames = ["Toutes", ...params.proteines.map(p=>p.name)];
-
-    const filtered = jourData.filter(row => {
-      const matchRest = jourRest === "Tous" || (row.restaurant||"").toLowerCase() === jourRest.toLowerCase();
-      const matchDate = !jourDate || (row.date||"").slice(0,10) === jourDate;
-      const matchProt = jourProt === "Toutes" || (row.proteine||"") === jourProt;
-      return matchRest && matchDate && matchProt;
-    });
-
-    const ecartColor = (ecart) => {
-      const abs = Math.abs(ecart);
-      if (abs <= 10) return {bg:"#e8f5e9", text:"#2e7d32"};
-      if (abs <= 20) return {bg:"#fff3e0", text:"#e65100"};
-      return {bg:"#ffebee", text:"#c62828"};
-    };
-
-    return (
-      <div>
-        {/* Filtres */}
-        <div style={{display:"flex",gap:12,marginBottom:16,flexWrap:"wrap",alignItems:"flex-end"}}>
-          <div>
-            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".08em",marginBottom:4}}>Restaurant</div>
-            <select value={jourRest} onChange={e=>setJourRest(e.target.value)} style={{fontSize:13,padding:"6px 10px",border:"1px solid #e0e0e0",borderRadius:7,background:"#fff",cursor:"pointer",color:"#111"}}>
-              <option value="Tous">Tous</option>
-              {RESTAURANTS.map(r=><option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-          <div>
-            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".08em",marginBottom:4}}>Date</div>
-            <input type="date" value={jourDate} onChange={e=>setJourDate(e.target.value)} style={{fontSize:13,padding:"6px 10px",border:"1px solid #e0e0e0",borderRadius:7,background:"#fff",color:"#111"}} />
-          </div>
-          <div>
-            <div style={{fontSize:10,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".08em",marginBottom:4}}>Protéine</div>
-            <select value={jourProt} onChange={e=>setJourProt(e.target.value)} style={{fontSize:13,padding:"6px 10px",border:"1px solid #e0e0e0",borderRadius:7,background:"#fff",cursor:"pointer",color:"#111"}}>
-              {proteinesNames.map(p=><option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Tableau */}
-        {filtered.length === 0 ? (
-          <div style={{textAlign:"center",padding:"48px 24px",color:"#aaa",fontSize:14,background:"#fafafa",borderRadius:12,border:"1px dashed #e0e0e0"}}>
-            <div style={{fontSize:32,marginBottom:12}}>📋</div>
-            <div style={{fontWeight:600,color:"#888",marginBottom:6}}>Aucune donnée</div>
-            <div style={{fontSize:12}}>Utilisez l'inventaire mobile pour saisir</div>
-          </div>
-        ) : (
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-              <thead>
-                <tr style={{background:"#1a237e"}}>
-                  {["Date","Service","Protéine","État","Stock début","Stock fin","Portions","Gramm. réel","Gramm. théo","Écart"].map(h=>(
-                    <th key={h} style={{padding:"8px 10px",color:"#fff",textAlign:"left",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((row,i)=>{
-                  const ecart = (parseFloat(row.grammage_reel)||0) - (parseFloat(row.grammage_theo)||0);
-                  const col = ecartColor(ecart);
-                  return (
-                    <tr key={i} style={{borderBottom:"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
-                      <td style={{padding:"7px 10px",whiteSpace:"nowrap"}}>{(row.date||"").slice(0,10)}</td>
-                      <td style={{padding:"7px 10px"}}>{row.service||"—"}</td>
-                      <td style={{padding:"7px 10px",fontWeight:600}}>{row.proteine||"—"}</td>
-                      <td style={{padding:"7px 10px",color:"#666"}}>{row.etat||"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_debut!=null?parseFloat(row.stock_debut).toFixed(3):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_fin!=null?parseFloat(row.stock_fin).toFixed(3):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.portions!=null?parseFloat(row.portions).toFixed(0):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_reel!=null?parseFloat(row.grammage_reel).toFixed(1):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_theo!=null?parseFloat(row.grammage_theo).toFixed(1):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>
-                        <span style={{background:col.bg,color:col.text,padding:"2px 8px",borderRadius:10,fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>
-                          {ecart>=0?"+":""}{ecart.toFixed(1)}g
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const renderControle=()=>{
     const totals=params.proteines.map(pp=>({pp,cv:calcCtrlProt(ctrlRest,ctrlSem,pp)}));
     const totalTheo=totals.reduce((s,t)=>s+t.cv.theo_net,0);
@@ -1094,11 +751,13 @@ function App() {
           <div><SectionLabel>Restaurant</SectionLabel><RestSelector val={ctrlRest} set={setCtrlRest}/></div>
         </div>
         <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:6,background:finOk?"#e8f5e9":"#fff3e0",border:`1px solid ${finOk?"#a5d6a7":"#ffe0b2"}`}}>
-            <span style={{fontSize:11,fontWeight:600,color:finOk?"#2e7d32":"#e65100"}}>{finOk?"✓":"⚠"} Inv. Fin</span>
-            <span style={{fontSize:10,color:finOk?"#2e7d32":"#e65100"}}>{finOk?"Validé":"Non validé"}</span>
-          </div>
-          {!finOk&&<div style={{fontSize:11,color:"#888",display:"flex",alignItems:"center"}}>→ Validez l'inventaire dans l'onglet Inventaire</div>}
+          {[["Inv. Début",debOk],["Inv. Fin",finOk]].map(([lbl,ok])=>(
+            <div key={lbl} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:6,background:ok?"#e8f5e9":"#fff3e0",border:`1px solid ${ok?"#a5d6a7":"#ffe0b2"}`}}>
+              <span style={{fontSize:11,fontWeight:600,color:ok?"#2e7d32":"#e65100"}}>{ok?"✓":"⚠"} {lbl}</span>
+              <span style={{fontSize:10,color:ok?"#2e7d32":"#e65100"}}>{ok?"Validé":"Non validé"}</span>
+            </div>
+          ))}
+          {(!debOk||!finOk)&&<div style={{fontSize:11,color:"#888",display:"flex",alignItems:"center"}}>→ Validez les inventaires dans l'onglet Inventaire</div>}
         </div>
         <div style={{display:"inline-flex",alignItems:"center",gap:10,background:gCol.bg,borderRadius:8,padding:"10px 18px",marginBottom:16,borderLeft:`3px solid ${gCol.text}`}}>
           <span style={{fontSize:10,fontWeight:700,color:gCol.text,textTransform:"uppercase",letterSpacing:".06em"}}>Écart total</span>
@@ -1122,7 +781,7 @@ function App() {
                   <tr key={pp.name} style={{background:i%2===0?"#fafafa":"#fff",borderBottom:"1px solid #efefef"}}>
                     <td style={{padding:"7px 10px",fontWeight:700}}>{pp.name}</td>
                     <td style={{padding:"6px 8px",textAlign:"center"}}><span style={{background:col.bg,color:col.text,padding:"3px 8px",borderRadius:10,fontWeight:700,fontSize:11}}>{cv.ecart_kg>=0?"+":""}{fmtN(cv.ecart_pct,1)}%</span></td>
-                    <td style={{padding:"6px 8px",textAlign:"center",color:"#555",fontSize:11}}>{fmtN(cv.inv_debut,3)}</td>
+                    <td style={{padding:"6px 8px",textAlign:"center",color:debOk?"#2e7d32":"#aaa",fontWeight:debOk?700:400,fontSize:11}}>{fmtN(cv.inv_debut,3)}{debOk&&<span style={{fontSize:9,color:"#a5d6a7",marginLeft:3}}>✓</span>}</td>
                     <td style={{padding:"6px 8px",textAlign:"center",color:finOk?"#2e7d32":"#aaa",fontWeight:finOk?700:400,fontSize:11}}>{fmtN(cv.inv_fin,3)}{finOk&&<span style={{fontSize:9,color:"#a5d6a7",marginLeft:3}}>✓</span>}</td>
                     <td style={{padding:"6px 8px",textAlign:"center",color:cv.trans_net>=0?"#2e7d32":"#c62828",fontWeight:600,fontSize:11}}>{cv.trans_net>=0?"+":""}{fmtN(cv.trans_net,3)}</td>
                     <td style={{padding:"6px 8px",textAlign:"center"}}><input type="number" min="0" value={d.portions_sig||""} placeholder="0" onChange={e=>updateCtrlProt(ctrlRest,ctrlSem,pp.name,"portions_sig",e.target.value)} style={{width:58,padding:"3px 5px",border:"1px solid #ddd",borderRadius:4,fontSize:11,textAlign:"center",background:"#fffde7"}}/></td>
@@ -1312,7 +971,7 @@ function App() {
   );
 
   // ── RENDER ────────────────────────────────────────────────────────────────
-  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"journalier",label:"📅 Journalier"},{id:"params",label:"⚙️ Paramètres"}];
+  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"params",label:"⚙️ Paramètres"}];
 
   if(!isLoaded) return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:200,gap:12}}>
@@ -1335,14 +994,10 @@ function App() {
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",color:"#aaa",textTransform:"uppercase",marginBottom:1}}>ILIA · Food Cost</div>
-          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",journalier:"Inventaire journalier",params:"Paramètres"}[mode]}</div>
+          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",params:"Paramètres"}[mode]}</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {saved&&<span style={{fontSize:11,color:"#059669"}}>✓ Sauvegardé</span>}
-          {syncStatus==="loading"&&<span style={{fontSize:11,color:"#1565c0"}}>🔄 Sync…</span>}
-          {syncStatus==="ok"&&<span style={{fontSize:11,color:"#059669"}}>☁ Synced</span>}
-          {syncStatus==="error"&&<span style={{fontSize:11,color:"#e65100"}}>⚠ Sync KO</span>}
-          <button onClick={()=>syncFromSheets(invData,transfers)} disabled={syncStatus==="loading"} style={{fontSize:11,color:"#1565c0",background:"none",border:"1px solid #bbdefb",borderRadius:5,padding:"3px 9px",cursor:"pointer",opacity:syncStatus==="loading"?0.6:1}}>🔄 Sync</button>
           <button onClick={async()=>{ if(!window.confirm("Réinitialiser les achats ?")) return; try{await window.storage.delete(SK.achats);}catch{} setAchats(INIT_ACHATS); }} style={{fontSize:11,color:"#dc2626",background:"none",border:"1px solid #fecaca",borderRadius:5,padding:"3px 9px",cursor:"pointer"}}>Reset</button>
         </div>
       </div>
@@ -1361,7 +1016,6 @@ function App() {
           {renderControle()}
         </div>
       )}
-      {mode==="journalier" && renderJournalier()}
       {mode==="params" && renderParams()}
 
       <div style={{marginTop:20,fontSize:10,color:"#ddd",textAlign:"center"}}>ILIA Groupe © 2026</div>
