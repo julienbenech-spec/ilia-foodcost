@@ -380,7 +380,7 @@ function App() {
   const [jourProt,  setJourProt]  = useState("Toutes");
 
   // Achats UI
-  const [tab,        setTab]        = useState("Cercle Vert");
+  const [tab,        setTab]        = useState("Global");
   const [achatsView, setAchatsView] = useState("ingredients");
   const [moisFilter, setMoisFilter] = useState("Tous");
   const [restoFilter, setRestoFilter] = useState("Tous");
@@ -620,7 +620,7 @@ function App() {
   };
 
   // ── Achats ──
-  const filteredEntries=f=>Object.entries(achats).filter(([k])=>{ const[ff,r,m]=k.split("__"); return ff===f&&(moisFilter==="Tous"||m===moisFilter)&&(restoFilter==="Tous"||r===restoFilter); });
+  const filteredEntries=f=>Object.entries(achats).filter(([k])=>{ const[ff,r,m]=k.split("__"); if(f==="Global") return (moisFilter==="Tous"||m===moisFilter)&&(restoFilter==="Tous"||r===restoFilter); return ff===f&&(moisFilter==="Tous"||m===moisFilter)&&(restoFilter==="Tous"||r===restoFilter); });
   const rowsFor=f=>{
     const byI={},byR={};
     filteredEntries(f).forEach(([k,lines])=>{ const[,r]=k.split("__"); lines.forEach(l=>{ if(!byI[l.ingredient]) byI[l.ingredient]={montant:0,qty:0,unit:l.unit||""}; byI[l.ingredient].montant+=l.montant; byI[l.ingredient].qty+=(l.qty||0); byI[l.ingredient].unit=l.unit||byI[l.ingredient].unit; byR[r]=(byR[r]||0)+l.montant; }); });
@@ -1246,6 +1246,7 @@ function App() {
         ))}
       </div>
       <div style={{borderBottom:"2px solid #f0f0ee",marginBottom:12,display:"flex",overflowX:"auto"}}>
+        <button onClick={()=>{setTab("Global");setAchatsView("ingredients");}} style={{padding:"6px 12px",fontSize:11,fontWeight:tab==="Global"?700:400,color:tab==="Global"?"#111":"#666",background:"transparent",border:"none",borderBottom:tab==="Global"?"2px solid #111":"2px solid transparent",cursor:"pointer",marginBottom:-2,whiteSpace:"nowrap"}}>🌐 Global</button>
         {FOURNISSEURS.map(f=><button key={f} onClick={()=>{setTab(f);setAchatsView("ingredients");}} style={{padding:"6px 12px",fontSize:11,fontWeight:tab===f?600:400,color:tab===f?"#111":"#666",background:"transparent",border:"none",borderBottom:tab===f?"2px solid #111":"2px solid transparent",cursor:"pointer",marginBottom:-2,whiteSpace:"nowrap"}}>{f}</button>)}
       </div>
       <div style={{display:"flex",gap:4,marginBottom:12}}>
