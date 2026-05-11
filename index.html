@@ -383,6 +383,7 @@ function App() {
   const [tab,        setTab]        = useState("Cercle Vert");
   const [achatsView, setAchatsView] = useState("ingredients");
   const [moisFilter, setMoisFilter] = useState("Tous");
+  const [restoFilter, setRestoFilter] = useState("Tous");
   const [form,       setForm]       = useState({fournisseur:"Cercle Vert",restaurant:"Washington",mois:"Janvier 2026",ingredient:"",montant:"",qty:"",unit:""});
   // Contrôle UI
   const [ctrlSem,   setCtrlSem]  = useState("S13");
@@ -619,7 +620,7 @@ function App() {
   };
 
   // ── Achats ──
-  const filteredEntries=f=>Object.entries(achats).filter(([k])=>{ const[ff,,m]=k.split("__"); return ff===f&&(moisFilter==="Tous"||m===moisFilter); });
+  const filteredEntries=f=>Object.entries(achats).filter(([k])=>{ const[ff,r,m]=k.split("__"); return ff===f&&(moisFilter==="Tous"||m===moisFilter)&&(restoFilter==="Tous"||r===restoFilter); });
   const rowsFor=f=>{
     const byI={},byR={};
     filteredEntries(f).forEach(([k,lines])=>{ const[,r]=k.split("__"); lines.forEach(l=>{ if(!byI[l.ingredient]) byI[l.ingredient]={montant:0,qty:0,unit:l.unit||""}; byI[l.ingredient].montant+=l.montant; byI[l.ingredient].qty+=(l.qty||0); byI[l.ingredient].unit=l.unit||byI[l.ingredient].unit; byR[r]=(byR[r]||0)+l.montant; }); });
@@ -1223,10 +1224,16 @@ function App() {
           {syncStatus==="loading"?"🔄 Chargement…":"🔄 Charger depuis Sheets"}
         </button>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
+      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,flexWrap:"wrap"}}>
         <span style={{fontSize:11,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em"}}>Période</span>
-        <div style={{display:"flex",gap:4}}>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
           {["Tous",...MOIS].map(m=><button key={m} onClick={()=>setMoisFilter(m)} style={{fontSize:11,padding:"4px 10px",borderRadius:16,border:"1px solid",borderColor:moisFilter===m?"#111":"#e0e0e0",background:moisFilter===m?"#111":"#fff",color:moisFilter===m?"#fff":"#666",cursor:"pointer",fontWeight:moisFilter===m?600:400}}>{m}</button>)}
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12,flexWrap:"wrap"}}>
+        <span style={{fontSize:11,fontWeight:600,color:"#888",textTransform:"uppercase",letterSpacing:".06em"}}>Restaurant</span>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {["Tous",...RESTAURANTS].map(r=><button key={r} onClick={()=>setRestoFilter(r)} style={{fontSize:11,padding:"4px 10px",borderRadius:16,border:"1px solid",borderColor:restoFilter===r?"#1a237e":"#e0e0e0",background:restoFilter===r?"#1a237e":"#fff",color:restoFilter===r?"#fff":"#666",cursor:"pointer",fontWeight:restoFilter===r?600:400}}>{r}</button>)}
         </div>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
