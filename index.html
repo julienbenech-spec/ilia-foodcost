@@ -374,6 +374,7 @@ function App() {
   const [syncStatus, setSyncStatus] = useState("idle"); // "idle"|"loading"|"ok"|"error"
   const [mode,      setMode]      = useState("achats");
   const [jourData,  setJourData]  = useState([]);
+  const [prixTab,   setPrixTab]   = useState("Saumon");
   // Journalier UI
   const [jourRest,  setJourRest]  = useState("Tous");
   const [jourDate,  setJourDate]  = useState(""); // vide = toutes les dates
@@ -1362,7 +1363,6 @@ function App() {
     };
 
     const proteines = ["Saumon","Thon","Bœuf","Poulet"];
-    const [prixTab, setPrixTab] = React.useState(proteines[0]);
 
     const getVariation = (data, idx) => {
       if (idx <= 0 || idx >= data.length) return null;
