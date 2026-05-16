@@ -375,6 +375,13 @@ function App() {
   const [mode,      setMode]      = useState("achats");
   const [jourData,  setJourData]  = useState([]);
   const [prixTab,   setPrixTab]   = useState("Saumon");
+  // Commandes UI
+  const [commandesPanier,   setCommandesPanier]   = useState([]);
+  const [commandesHistory,  setCommandesHistory]  = useState([]);
+  const [commandesSent,     setCommandesSent]     = useState(false);
+  const [commandesLoading,  setCommandesLoading]  = useState(false);
+  const [cmdForm, setCmdForm] = useState({restaurant: RESTAURANTS[0], article: "Saumon Ecosse Filet", qty_kg: "", date_livraison: ""});
+
   // Journalier UI
   const [jourRest,  setJourRest]  = useState("Tous");
   const [jourDate,  setJourDate]  = useState(""); // vide = toutes les dates
@@ -1488,8 +1495,245 @@ function App() {
     );
   };
 
+  // ════════════════════════════════════════════════════════════════════════
+  // COMMANDES VIEW
+  // ════════════════════════════════════════════════════════════════════════
+  const JOCEANE_ARTICLES = ["Saumon Ecosse Filet", "Saumon Norvège Filet", "Thon Albacore Filet"];
+
+  const loadCommandesHistory = async () => {
+    try {
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=getCommandes`);
+      const json = await resp.json();
+      setCommandesHistory(json.rows || []);
+    } catch(e) {
+      console.warn("loadCommandes failed:", e);
+    }
+  };
+
+  const ajouterAuPanier = () => {
+    if (!cmdForm.qty_kg || !cmdForm.date_livraison) return;
+    setCommandesPanier(prev => [...prev, {
+      restaurant: cmdForm.restaurant,
+      article: cmdForm.article,
+      qty_kg: parseFloat(cmdForm.qty_kg) || 0,
+      date_livraison: cmdForm.date_livraison
+    }]);
+    setCmdForm(f => ({...f, qty_kg: "", date_livraison: ""}));
+  };
+
+  const envoyerToutesCommandes = async () => {
+    if (commandesPanier.length === 0) return;
+    setCommandesLoading(true);
+    try {
+      // 1. Sauvegarder chaque ligne
+      const ids = [];
+      for (const ligne of commandesPanier) {
+        const encoded = encodeURIComponent(JSON.stringify({action:"saveCommande", ...ligne}));
+        const resp = await fetch(`${APPS_SCRIPT_URL}?data=${encoded}`);
+        const json = await resp.json();
+        if (json.id) ids.push(json.id);
+      }
+      // 2. Envoyer l'email récap
+      const encoded = encodeURIComponent(JSON.stringify({action:"envoyerCommande", lignes:commandesPanier, ids}));
+      await fetch(`${APPS_SCRIPT_URL}?data=${encoded}`);
+      setCommandesSent(true);
+      setCommandesPanier([]);
+      await loadCommandesHistory();
+      setTimeout(() => setCommandesSent(false), 5000);
+    } catch(e) {
+      console.warn("envoyerCommandes failed:", e);
+    }
+    setCommandesLoading(false);
+  };
+
+  const renderCommandes = () => {
+    // Date min = demain
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+    return (
+      <div style={{maxWidth:640, margin:"0 auto"}}>
+
+        {/* ── Section 1 : Formulaire ── */}
+        <div style={{background:"#e0f7fa", borderRadius:14, padding:18, marginBottom:20, border:"1px solid #b2ebf2"}}>
+          <div style={{fontSize:13, fontWeight:700, color:"#004d40", marginBottom:14}}>🐟 Nouvelle commande J'Océane</div>
+
+          {/* Restaurant */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:10, fontWeight:700, color:"#00695c", textTransform:"uppercase", letterSpacing:".07em", marginBottom:6}}>Restaurant</div>
+            <div style={{display:"flex", gap:6, flexWrap:"wrap"}}>
+              {RESTAURANTS.map(r => (
+                <button key={r} onClick={() => setCmdForm(f => ({...f, restaurant:r}))}
+                  style={{padding:"8px 14px", borderRadius:20, border:"1px solid",
+                    borderColor:cmdForm.restaurant===r?"#00695c":"#b2dfdb",
+                    background:cmdForm.restaurant===r?"#00695c":"#fff",
+                    color:cmdForm.restaurant===r?"#fff":"#004d40",
+                    cursor:"pointer", fontSize:13, fontWeight:cmdForm.restaurant===r?700:400}}>
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Article */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:10, fontWeight:700, color:"#00695c", textTransform:"uppercase", letterSpacing:".07em", marginBottom:6}}>Article</div>
+            <div style={{display:"flex", gap:6, flexWrap:"wrap"}}>
+              {JOCEANE_ARTICLES.map(a => (
+                <button key={a} onClick={() => setCmdForm(f => ({...f, article:a}))}
+                  style={{padding:"8px 14px", borderRadius:20, border:"1px solid",
+                    borderColor:cmdForm.article===a?"#00695c":"#b2dfdb",
+                    background:cmdForm.article===a?"#00695c":"#fff",
+                    color:cmdForm.article===a?"#fff":"#004d40",
+                    cursor:"pointer", fontSize:13, fontWeight:cmdForm.article===a?700:400}}>
+                  {a}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Quantité + Date livraison */}
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14}}>
+            <div>
+              <div style={{fontSize:10, fontWeight:700, color:"#00695c", textTransform:"uppercase", letterSpacing:".07em", marginBottom:6}}>Quantité (kg)</div>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={cmdForm.qty_kg}
+                onChange={e => setCmdForm(f => ({...f, qty_kg:e.target.value}))}
+                placeholder="ex: 10"
+                style={{width:"100%", padding:"12px", border:"1px solid #b2dfdb", borderRadius:10, fontSize:16, textAlign:"center", background:"#fffde7", boxSizing:"border-box"}}
+              />
+            </div>
+            <div>
+              <div style={{fontSize:10, fontWeight:700, color:"#00695c", textTransform:"uppercase", letterSpacing:".07em", marginBottom:6}}>Date de livraison</div>
+              <input
+                type="date"
+                min={tomorrowStr}
+                value={cmdForm.date_livraison}
+                onChange={e => setCmdForm(f => ({...f, date_livraison:e.target.value}))}
+                style={{width:"100%", padding:"12px", border:"1px solid #b2dfdb", borderRadius:10, fontSize:14, background:"#fff", boxSizing:"border-box", color:"#111"}}
+              />
+            </div>
+          </div>
+
+          <button onClick={ajouterAuPanier}
+            disabled={!cmdForm.qty_kg || !cmdForm.date_livraison}
+            style={{width:"100%", padding:"14px", background:(!cmdForm.qty_kg||!cmdForm.date_livraison)?"#b2dfdb":"#00695c",
+              color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700, cursor:(!cmdForm.qty_kg||!cmdForm.date_livraison)?"not-allowed":"pointer",
+              boxShadow:(!cmdForm.qty_kg||!cmdForm.date_livraison)?"none":"0 4px 12px rgba(0,105,92,.25)"}}>
+            + Ajouter à la commande
+          </button>
+        </div>
+
+        {/* ── Section 2 : Panier ── */}
+        <div style={{background:"#fff", borderRadius:14, padding:18, marginBottom:20, border:"1px solid #e0e0e0", boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
+          <div style={{fontSize:13, fontWeight:700, color:"#111", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+            <span>🛒 Panier en cours</span>
+            {commandesPanier.length > 0 && (
+              <span style={{fontSize:11, background:"#e0f7fa", color:"#00695c", padding:"3px 10px", borderRadius:20, fontWeight:700}}>
+                {commandesPanier.length} ligne{commandesPanier.length>1?"s":""}
+              </span>
+            )}
+          </div>
+
+          {commandesPanier.length === 0 ? (
+            <div style={{textAlign:"center", padding:"24px 0", color:"#bbb", fontSize:13}}>
+              Aucune ligne — ajoutez des articles ci-dessus
+            </div>
+          ) : (
+            <div>
+              {commandesPanier.map((ligne, idx) => (
+                <div key={idx} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"#f8fffe", borderRadius:10, border:"1px solid #e0f7fa", marginBottom:8}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13, fontWeight:700, color:"#004d40"}}>{ligne.restaurant}</div>
+                    <div style={{fontSize:12, color:"#00695c"}}>{ligne.article}</div>
+                    <div style={{fontSize:11, color:"#888", marginTop:2}}>
+                      <strong>{ligne.qty_kg} kg</strong> · livraison {ligne.date_livraison}
+                    </div>
+                  </div>
+                  <button onClick={() => setCommandesPanier(prev => prev.filter((_,i) => i!==idx))}
+                    style={{background:"#ffebee", border:"none", borderRadius:8, padding:"6px 10px", cursor:"pointer", color:"#c62828", fontSize:13, fontWeight:700}}>
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {commandesSent ? (
+                <div style={{textAlign:"center", padding:"14px", background:"#e8f5e9", borderRadius:12, border:"1px solid #a5d6a7", fontSize:15, fontWeight:700, color:"#2e7d32"}}>
+                  ✅ Commande envoyée à J'Océane !
+                </div>
+              ) : (
+                <button onClick={envoyerToutesCommandes}
+                  disabled={commandesLoading}
+                  style={{width:"100%", marginTop:8, padding:"14px", background:commandesLoading?"#b2dfdb":"#00695c",
+                    color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700,
+                    cursor:commandesLoading?"not-allowed":"pointer",
+                    boxShadow:commandesLoading?"none":"0 4px 12px rgba(0,105,92,.25)"}}>
+                  {commandesLoading ? "⏳ Envoi en cours…" : "📧 Envoyer la commande à J'Océane"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Section 3 : Historique ── */}
+        <div style={{background:"#fff", borderRadius:14, padding:18, border:"1px solid #e0e0e0", boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
+          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14}}>
+            <div style={{fontSize:13, fontWeight:700, color:"#111"}}>📋 Historique des commandes</div>
+            <button onClick={loadCommandesHistory}
+              style={{fontSize:11, padding:"5px 12px", background:"#e0f7fa", color:"#00695c", border:"1px solid #b2dfdb", borderRadius:8, cursor:"pointer", fontWeight:600}}>
+              🔄 Actualiser
+            </button>
+          </div>
+
+          {commandesHistory.length === 0 ? (
+            <div style={{textAlign:"center", padding:"32px 0", color:"#bbb", fontSize:13}}>
+              <div style={{fontSize:32, marginBottom:10}}>📭</div>
+              Aucune commande — chargez l'historique depuis Sheets
+            </div>
+          ) : (
+            <div style={{overflowX:"auto"}}>
+              <table style={{width:"100%", borderCollapse:"collapse", fontSize:12}}>
+                <thead>
+                  <tr style={{background:"#00695c"}}>
+                    {["Date","Restaurant","Article","Qty (kg)","Livraison","Statut","Email"].map(h => (
+                      <th key={h} style={{padding:"8px 10px", color:"#fff", textAlign:"left", fontWeight:600, fontSize:11, whiteSpace:"nowrap"}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {commandesHistory.map((row, i) => (
+                    <tr key={i} style={{borderBottom:"1px solid #f0f0f0", background:i%2===0?"#fff":"#f8fffe"}}>
+                      <td style={{padding:"7px 10px", whiteSpace:"nowrap"}}>{row.date||"—"}</td>
+                      <td style={{padding:"7px 10px", fontWeight:600}}>{row.restaurant||"—"}</td>
+                      <td style={{padding:"7px 10px", color:"#00695c"}}>{row.article||"—"}</td>
+                      <td style={{padding:"7px 10px", textAlign:"right", fontWeight:600}}>{row.qty_kg||"—"}</td>
+                      <td style={{padding:"7px 10px", whiteSpace:"nowrap"}}>{row.date_livraison||"—"}</td>
+                      <td style={{padding:"7px 10px"}}>
+                        <span style={{padding:"2px 8px", borderRadius:10, fontSize:11, fontWeight:600,
+                          background:row.statut==="Envoyée"?"#e8f5e9":"#fff3e0",
+                          color:row.statut==="Envoyée"?"#2e7d32":"#e65100"}}>
+                          {row.statut||"—"}
+                        </span>
+                      </td>
+                      <td style={{padding:"7px 10px", textAlign:"center"}}>
+                        <span style={{fontSize:14}}>{row.email_envoye==="oui"?"✅":"—"}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // ── RENDER ────────────────────────────────────────────────────────────────
-  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"journalier",label:"📅 Journalier"},{id:"prix",label:"📊 Variation des prix"},{id:"params",label:"⚙️ Paramètres"}];
+  const TABS=[{id:"achats",label:"📦 Achats"},{id:"inventaire",label:"📋 Inventaire"},{id:"controle",label:"🔬 Contrôle"},{id:"journalier",label:"📅 Journalier"},{id:"prix",label:"📊 Variation des prix"},{id:"commandes",label:"🛒 Commandes"},{id:"params",label:"⚙️ Paramètres"}];
 
   if(!isLoaded) return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:200,gap:12}}>
@@ -1512,7 +1756,7 @@ function App() {
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",color:"#aaa",textTransform:"uppercase",marginBottom:1}}>ILIA · Food Cost</div>
-          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",journalier:"Inventaire journalier",prix:"Suivi des prix fournisseurs",params:"Paramètres"}[mode]}</div>
+          <div style={{fontSize:18,fontWeight:700}}>{{achats:"Achats fournisseurs",inventaire:"Inventaire protéines",controle:"Contrôle hebdomadaire",journalier:"Inventaire journalier",prix:"Suivi des prix fournisseurs",commandes:"Commandes fournisseurs",params:"Paramètres"}[mode]}</div>
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           {saved&&<span style={{fontSize:11,color:"#059669"}}>✓ Sauvegardé</span>}
@@ -1540,6 +1784,7 @@ function App() {
       )}
       {mode==="journalier" && renderJournalier()}
       {mode==="prix"      && renderPrix()}
+      {mode==="commandes" && renderCommandes()}
       {mode==="params" && renderParams()}
 
       <div style={{marginTop:20,fontSize:10,color:"#ddd",textAlign:"center"}}>ILIA Groupe © 2026</div>

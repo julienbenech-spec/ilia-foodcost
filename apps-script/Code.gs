@@ -15,10 +15,12 @@ function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     const action = data.action;
-    if (action === "saveInventaire") return saveInventaire(data);
-    if (action === "saveTransfert")  return saveTransfert(data);
-    if (action === "getInventaire")  return getInventaire(data);
-    if (action === "saveAchat")      return saveAchat(data);
+    if (action === "saveInventaire")  return saveInventaire(data);
+    if (action === "saveTransfert")   return saveTransfert(data);
+    if (action === "getInventaire")   return getInventaire(data);
+    if (action === "saveAchat")       return saveAchat(data);
+    if (action === "saveCommande")    return saveCommande(data);
+    if (action === "envoyerCommande") return envoyerCommande(data);
     return jsonResponse({ error: "Unknown action: " + action });
   } catch (err) {
     return jsonResponse({ error: err.message });
@@ -35,6 +37,8 @@ function doGet(e) {
       if (action === "saveTransfert")         return saveTransfert(payload);
       if (action === "saveAchat")             return saveAchat(payload);
       if (action === "saveInventaireJour")    return saveInventaireJour(payload);
+      if (action === "saveCommande")          return saveCommande(payload);
+      if (action === "envoyerCommande")       return envoyerCommande(payload);
     }
     // Mode lecture
     const action = e.parameter.action;
@@ -44,6 +48,7 @@ function doGet(e) {
     if (action === "getAchats")           return getAchats(e.parameter);
     if (action === "getVentesJour")       return getVentesJour(e.parameter);
     if (action === "getInventaireJour")   return getInventaireJour(e.parameter);
+    if (action === "getCommandes")        return getCommandes(e.parameter);
     return jsonResponse({ error: "Unknown action" });
   } catch (err) {
     return jsonResponse({ error: err.message });
@@ -281,6 +286,69 @@ function saveInventaireJour(data) {
   ]);
 
   return jsonResponse({ ok: true });
+}
+
+// ── COMMANDES J'OCÉANE ───────────────────────────────────────────────────────
+
+function saveCommande(data) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("Commandes");
+  const id = "CMD-" + Date.now();
+  sheet.appendRow([
+    id,
+    new Date().toLocaleDateString("fr-FR"),
+    data.restaurant,
+    "J'Océane",
+    data.date_livraison,
+    data.article,
+    data.qty_kg || 0,
+    "En attente",
+    "non",
+    data.notes || ""
+  ]);
+  return jsonResponse({ ok: true, id: id });
+}
+
+function envoyerCommande(data) {
+  // data.lignes = [{restaurant, article, qty_kg, date_livraison}]
+  // data.ids = [array of CMD ids]
+  const subject = "Commande J'Océane — " + new Date().toLocaleDateString("fr-FR");
+  let body = "Bonjour,\n\nVoici notre commande :\n\n";
+  data.lignes.forEach(function(l) {
+    body += "• " + l.restaurant + " — " + l.article + " : " + l.qty_kg + " kg (livraison " + l.date_livraison + ")\n";
+  });
+  body += "\nCordialement,\nILIA Groupe";
+
+  GmailApp.sendEmail("julien.benech@gmail.com", subject, body);
+
+  // Marquer les commandes comme email envoyé
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("Commandes");
+  const allData = sheet.getDataRange().getValues();
+  (data.ids || []).forEach(function(id) {
+    for (var i = 1; i < allData.length; i++) {
+      if (allData[i][0] === id) {
+        sheet.getRange(i + 1, 9).setValue("oui"); // colonne Email_Envoye
+        sheet.getRange(i + 1, 8).setValue("Envoyée"); // colonne Statut
+        break;
+      }
+    }
+  });
+  return jsonResponse({ ok: true });
+}
+
+function getCommandes(params) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("Commandes");
+  const data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return jsonResponse({ rows: [] });
+  const rows = data.slice(1).map(function(row) {
+    return {
+      id: row[0], date: row[1], restaurant: row[2], fournisseur: row[3],
+      date_livraison: row[4], article: row[5], qty_kg: row[6],
+      statut: row[7], email_envoye: row[8], notes: row[9]
+    };
+  });
+  return jsonResponse({ rows: rows });
 }
 
 function getInventaireJour(params) {
