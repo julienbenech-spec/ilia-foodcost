@@ -357,12 +357,22 @@ function App() {
         load(SK.jourFin,    setJourFin,    {}),
         load(SK.jourVentes, setJourVentes, null),
         (async () => {
+          const today = new Date().toISOString().split("T")[0];
           const r = await window.storage.get(SK.jourMeta).catch(() => null);
           if (r && r.value) {
             const meta = JSON.parse(r.value);
-            if (meta.restaurant) setJourRest(meta.restaurant);
-            if (meta.date)       setJourDate(meta.date);
-            if (meta.saved)      setJourSaved(meta.saved);
+            // Si les données sont d'un jour passé → reset automatique
+            if (meta.date && meta.date !== today) {
+              await window.storage.delete(SK.jourDebut);
+              await window.storage.delete(SK.jourFin);
+              await window.storage.delete(SK.jourMeta);
+              await window.storage.delete(SK.jourVentes);
+              // On repart avec un inventaire vierge pour aujourd'hui
+            } else {
+              if (meta.restaurant) setJourRest(meta.restaurant);
+              if (meta.date)       setJourDate(meta.date);
+              if (meta.saved)      setJourSaved(meta.saved);
+            }
           }
         })(),
       ]);
