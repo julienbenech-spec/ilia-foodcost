@@ -312,14 +312,22 @@ function saveCommande(data) {
 function envoyerCommande(data) {
   // data.lignes = [{restaurant, article, qty_kg, date_livraison}]
   // data.ids = [array of CMD ids]
-  const subject = "Commande J'Océane — " + new Date().toLocaleDateString("fr-FR");
-  let body = "Bonjour,\n\nVoici notre commande :\n\n";
+  const subject = "Commande J\u2019Oc\u00e9ane \u2014 " + new Date().toLocaleDateString("fr-FR");
+  var body = "Bonjour,\n\nVoici notre commande :\n\n";
   data.lignes.forEach(function(l) {
-    body += "• " + l.restaurant + " — " + l.article + " : " + l.qty_kg + " kg (livraison " + l.date_livraison + ")\n";
+    body += "\u2022 " + l.restaurant + " \u2014 " + l.article + " : " + l.qty_kg + " kg (livraison " + l.date_livraison + ")\n";
   });
   body += "\nCordialement,\nILIA Groupe";
 
-  GmailApp.sendEmail("julien.benech@gmail.com", subject, body);
+  // Envoi via proxy Mac mini (Himalaya bl@ilia.fr) — pas de GmailApp
+  var PROXY = "https://instantaneous-indigestible-johan.ngrok-free.dev";
+  var emailData = JSON.stringify({to: "julien.benech@gmail.com", subject: subject, body: body});
+  var proxyUrl = PROXY + "/?action=envoyerEmail&data=" + encodeURIComponent(emailData);
+  try {
+    UrlFetchApp.fetch(proxyUrl, {muteHttpExceptions: true});
+  } catch(e) {
+    Logger.log("Erreur envoi email: " + e);
+  }
 
   // Marquer les commandes comme email envoyé
   const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName("Commandes");
