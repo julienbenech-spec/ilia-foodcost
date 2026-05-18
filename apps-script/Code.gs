@@ -319,9 +319,16 @@ function envoyerCommande(data) {
   });
   body += "\nCordialement,\nILIA Groupe";
 
-  // Envoi via proxy Mac mini (Himalaya bl@ilia.fr) — pas de GmailApp
+  // Envoi via proxy Mac mini (Himalaya bl@ilia.fr) avec PDF en pièce jointe
   var PROXY = "https://instantaneous-indigestible-johan.ngrok-free.dev";
-  var emailData = JSON.stringify({to: "julien.benech@gmail.com", subject: subject, body: body});
+  var emailData = JSON.stringify({
+    to: "julien.benech@gmail.com",
+    subject: subject,
+    body: body,
+    lignes: data.lignes,
+    cmd_id: (data.ids && data.ids[0]) || "CMD",
+    cmd_date: new Date().toLocaleDateString("fr-FR")
+  });
   var proxyUrl = PROXY + "/?action=envoyerEmail&data=" + encodeURIComponent(emailData);
   try {
     UrlFetchApp.fetch(proxyUrl, {muteHttpExceptions: true});
