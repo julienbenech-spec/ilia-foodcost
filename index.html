@@ -1014,7 +1014,7 @@ function App() {
               </thead>
               <tbody>
                 {filtered.map((row,i)=>{
-                  const ecart = (parseFloat(row.grammage_reel)||0) - (parseFloat(row.grammage_theo)||0);
+                  const ecart = (parseFloat(String(row.grammage_reel||"0").replace(",","."))||0) - (parseFloat(String(row.grammage_theo||"0").replace(",","."))||0);
                   const col = ecartColor(ecart);
                   return (
                     <tr key={i} style={{borderBottom:"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
@@ -1022,11 +1022,11 @@ function App() {
                       <td style={{padding:"7px 10px"}}>{row.service||"—"}</td>
                       <td style={{padding:"7px 10px",fontWeight:600}}>{row.proteine||"—"}</td>
                       <td style={{padding:"7px 10px",color:"#666"}}>{row.etat||"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_debut!=null?parseFloat(row.stock_debut).toFixed(3):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_fin!=null?parseFloat(row.stock_fin).toFixed(3):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.portions!=null?parseFloat(row.portions).toFixed(0):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_reel!=null?parseFloat(row.grammage_reel).toFixed(1):"—"}</td>
-                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_theo!=null?parseFloat(row.grammage_theo).toFixed(1):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_debut!=null?parseFloat(String(row.stock_debut).replace(",",".")).toFixed(3):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_fin!=null?parseFloat(String(row.stock_fin).replace(",",".")).toFixed(3):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.portions!=null?parseFloat(String(row.portions).replace(",",".")).toFixed(0):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_reel!=null?parseFloat(String(row.grammage_reel).replace(",",".")).toFixed(1):"—"}</td>
+                      <td style={{padding:"7px 10px",textAlign:"right"}}>{row.grammage_theo!=null?parseFloat(String(row.grammage_theo).replace(",",".")).toFixed(1):"—"}</td>
                       <td style={{padding:"7px 10px",textAlign:"right"}}>
                         <span style={{background:col.bg,color:col.text,padding:"2px 8px",borderRadius:10,fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>
                           {ecart>=0?"+":""}{ecart.toFixed(1)}g
