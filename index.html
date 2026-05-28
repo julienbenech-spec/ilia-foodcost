@@ -645,7 +645,7 @@ function App() {
     const total=Object.values(byI).reduce((a,b)=>a+b.montant,0);
     return{ings:Object.entries(byI).sort((a,b)=>b[1].montant-a[1].montant),rests:Object.entries(byR).sort((a,b)=>b[1]-a[1]),total};
   };
-  const globalTotal=Object.entries(achats).filter(([k])=>moisFilter==="Tous"||k.split("__")[2]===moisFilter).reduce((s,[,a])=>s+a.reduce((x,l)=>x+l.montant,0),0);
+  const globalTotal=Object.entries(achats).filter(([k])=>{ const[,r,m]=k.split("__"); return (moisFilter==="Tous"||m===moisFilter)&&(restoFilter==="Tous"||r===restoFilter); }).reduce((s,[,a])=>s+a.reduce((x,l)=>x+l.montant,0),0);
   const addAchatLine=()=>{
     if(!form.ingredient.trim()||!form.montant) return;
     const k=`${form.fournisseur}__${form.restaurant}__${form.mois}`;
@@ -1255,7 +1255,7 @@ function App() {
         </div>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-        {[["Total",fmtK(globalTotal),moisFilter==="Tous"?`${MOIS.length} mois`:moisFilter,"#111"],...FOURNISSEURS.map(f=>{ const{total:t}=rowsFor(f); return[f,fmtK(t),t>0?pct(t,globalTotal)+" du total":"—",t>0?COLORS[f]?.accent||"#555":"#bbb"]; })].map(([lbl,val,sub,accent])=>(
+        {[["Total",fmtK(globalTotal),(moisFilter==="Tous"?`${MOIS.length} mois`:moisFilter)+(restoFilter!=="Tous"?` · ${restoFilter}`:""),"#111"],...FOURNISSEURS.map(f=>{ const{total:t}=rowsFor(f); return[f,fmtK(t),t>0?pct(t,globalTotal)+" du total":"—",t>0?COLORS[f]?.accent||"#555":"#bbb"]; })].map(([lbl,val,sub,accent])=>(
           <div key={lbl} style={{background:"#f8f8f6",borderRadius:8,padding:"10px 14px",flex:1,minWidth:100}}>
             <div style={{fontSize:9,color:"#888",fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:2}}>{lbl}</div>
             <div style={{fontSize:15,fontWeight:700,color:accent}}>{val}</div>
