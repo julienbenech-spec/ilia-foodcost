@@ -1285,42 +1285,35 @@ function App() {
               </div>
             ))}
           </div>
-          <AchatsDetail ings={ings} total={total} c={c} fmt={fmt} pct={pct}/>
+          {(()=>{ const [open, setOpen] = React.useState(false); return (
+            <div>
+              <button onClick={()=>setOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:6,width:"100%",background:"none",border:"1px solid #e0e0e0",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontSize:11,color:"#666",fontWeight:600,marginBottom:open?8:0}}>
+                <span>{open?"▲":"▼"}</span>
+                <span>{open?"Masquer le détail":"Voir tous les ingrédients"} ({ings.length})</span>
+              </button>
+              {open&&<div style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                  <thead><tr style={{borderBottom:"2px solid #f0f0ee"}}>{["#","Ingrédient","Qté","Unité","Prix unit.","Montant HT","%",""].map((h,i)=><th key={i} style={{padding:"5px 8px",color:"#888",fontWeight:600,fontSize:10,textAlign:i>=4?"right":i===2?"center":"left"}}>{h}</th>)}</tr></thead>
+                  <tbody>
+                    {ings.map(([ing,{montant:amt,qty,unit}],i)=>{ const w=total>0?Math.min((amt/total)*100,100):0; const prixU=qty>0?amt/qty:0; return(
+                      <tr key={ing} style={{borderBottom:"1px solid #f8f8f6",background:i<10?"#fffbeb":"transparent"}}>
+                        <td style={{padding:"5px 8px",color:"#ccc",fontSize:10}}>{i+1}</td>
+                        <td style={{padding:"5px 8px",fontWeight:i<3?600:400}}>{ing}</td>
+                        <td style={{padding:"5px 8px",textAlign:"center",fontWeight:600,color:c.accent}}>{qty>0?qty:"—"}</td>
+                        <td style={{padding:"5px 8px",color:"#888",fontSize:10}}>{unit||"—"}</td>
+                        <td style={{padding:"5px 8px",textAlign:"right",color:"#555",fontSize:11}}>{prixU>0?`${prixU.toFixed(2)}€/${unit||"u"}`:"—"}</td>
+                        <td style={{padding:"5px 8px",textAlign:"right",fontWeight:600}}>{fmt(amt)}</td>
+                        <td style={{padding:"5px 8px",textAlign:"right",color:"#888",fontSize:10}}>{pct(amt,total)}</td>
+                        <td style={{padding:"5px 8px"}}><div style={{background:"#f0f0ee",borderRadius:3,height:5}}><div style={{width:`${w.toFixed(0)}%`,height:5,background:c.accent,borderRadius:3}}/></div></td>
+                      </tr>); })}
+                  </tbody>
+                  <tfoot><tr style={{borderTop:"2px solid #e0e0e0",background:"#f8f8f6"}}><td colSpan={5} style={{padding:"6px 8px",fontWeight:700,fontSize:11}}>TOTAL</td><td style={{padding:"6px 8px",textAlign:"right",fontWeight:700,color:c.accent,fontSize:12}}>{fmt(total)}</td><td colSpan={2}/></tr></tfoot>
+                </table>
+              </div>}
+            </div>
+          );})()}
         </div>
       )}
-    </div>);
-  };
-
-  function AchatsDetail({ings, total, c, fmt, pct}) {
-    const [open, setOpen] = React.useState(false);
-    return (
-      <div>
-        <button onClick={()=>setOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:6,width:"100%",background:"none",border:"1px solid #e0e0e0",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontSize:11,color:"#666",fontWeight:600,marginBottom:open?8:0}}>
-          <span>{open?"▲":"▼"}</span>
-          <span>{open?"Masquer le détail":"Voir tous les ingrédients"} ({ings.length})</span>
-        </button>
-        {open&&<div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-            <thead><tr style={{borderBottom:"2px solid #f0f0ee"}}>{["#","Ingrédient","Qté","Unité","Prix unit.","Montant HT","%",""].map((h,i)=><th key={i} style={{padding:"5px 8px",color:"#888",fontWeight:600,fontSize:10,textAlign:i>=4?"right":i===2?"center":"left"}}>{h}</th>)}</tr></thead>
-            <tbody>
-              {ings.map(([ing,{montant:amt,qty,unit}],i)=>{ const w=total>0?Math.min((amt/total)*100,100):0; const prixU=qty>0?amt/qty:0; return(
-                <tr key={ing} style={{borderBottom:"1px solid #f8f8f6",background:i<10?"#fffbeb":"transparent"}}>
-                    <td style={{padding:"5px 8px",color:"#ccc",fontSize:10}}>{i+1}</td>
-                    <td style={{padding:"5px 8px",fontWeight:i<3?600:400}}>{ing}</td>
-                    <td style={{padding:"5px 8px",textAlign:"center",fontWeight:600,color:c.accent}}>{qty>0?qty:"—"}</td>
-                    <td style={{padding:"5px 8px",color:"#888",fontSize:10}}>{unit||"—"}</td>
-                    <td style={{padding:"5px 8px",textAlign:"right",color:"#555",fontSize:11}}>{prixU>0?`${prixU.toFixed(2)}€/${unit||"u"}`:"—"}</td>
-                    <td style={{padding:"5px 8px",textAlign:"right",fontWeight:600}}>{fmt(amt)}</td>
-                    <td style={{padding:"5px 8px",textAlign:"right",color:"#888",fontSize:10}}>{pct(amt,total)}</td>
-                    <td style={{padding:"5px 8px"}}><div style={{background:"#f0f0ee",borderRadius:3,height:5}}><div style={{width:`${w.toFixed(0)}%`,height:5,background:c.accent,borderRadius:3}}/></div></td>
-                  </tr>); })}
-              </tbody>
-              <tfoot><tr style={{borderTop:"2px solid #e0e0e0",background:"#f8f8f6"}}><td colSpan={5} style={{padding:"6px 8px",fontWeight:700,fontSize:11}}>TOTAL</td><td style={{padding:"6px 8px",textAlign:"right",fontWeight:700,color:c.accent,fontSize:12}}>{fmt(total)}</td><td colSpan={2}/></tr></tfoot>
-            </table>
-          </div>}
-      </div>
-    );
-  }
       {achatsView==="restaurants"&&(rests.length===0?<div style={{textAlign:"center",padding:"32px 0",color:"#bbb"}}>Aucune donnée</div>:
         <div>{rests.map(([r,amt],i)=>(
           <div key={r} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderBottom:"1px solid #f0f0ee"}}>
