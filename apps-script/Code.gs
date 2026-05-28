@@ -46,6 +46,7 @@ function doGet(e) {
     if (action === "getTransferts")       return getTransferts(e.parameter);
     if (action === "getZelty")            return getZelty(e.parameter);
     if (action === "getAchats")           return getAchats(e.parameter);
+    if (action === "getVariationsPrix")   return getVariationsPrix(e.parameter);
     if (action === "getVentesJour")       return getVentesJour(e.parameter);
     if (action === "getInventaireJour")   return getInventaireJour(e.parameter);
     if (action === "getCommandes")        return getCommandes(e.parameter);
@@ -135,6 +136,27 @@ function getAchats(params) {
       qty: parseFloat(String(row[4]).replace(',', '.')) || 0,
       unite: row[5],
       montant_ht: parseFloat(String(row[6]).replace(',', '.')) || 0,
+      source: row[7]
+    };
+  });
+  return jsonResponse({ rows: rows });
+}
+
+function getVariationsPrix(params) {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName("Variations_Prix");
+  if (!sheet) return jsonResponse({ rows: [] });
+  const data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) return jsonResponse({ rows: [] });
+  const rows = data.slice(1).map(function(row) {
+    return {
+      date: row[0],
+      fournisseur: row[1],
+      article: row[2],
+      ancien_prix: parseFloat(String(row[3]).replace(',', '.')) || 0,
+      nouveau_prix: parseFloat(String(row[4]).replace(',', '.')) || 0,
+      ecart_pct: parseFloat(String(row[5]).replace(',', '.')) || 0,
+      mois: row[6],
       source: row[7]
     };
   });

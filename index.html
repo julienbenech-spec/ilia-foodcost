@@ -143,12 +143,13 @@ const loadAchatsFromSheets = async () => {
 
 const loadFromSheets = async (currentInvData, currentTransfers) => {
   try {
-    const [invResp, transResp, zeltyResult, achatsFromSheets, jourRows] = await Promise.all([
+    const [invResp, transResp, zeltyResult, achatsFromSheets, jourRows, variationsResp] = await Promise.all([
       fetch(`${APPS_SCRIPT_URL}?action=getInventaire`),
       fetch(`${APPS_SCRIPT_URL}?action=getTransferts`),
       loadZeltyFromSheets(),
       loadAchatsFromSheets(),
-      loadInventaireJourFromSheets()
+      loadInventaireJourFromSheets(),
+      fetch(`${APPS_SCRIPT_URL}?action=getVariationsPrix`)
     ]);
     const invJson = await invResp.json();
     const transJson = await transResp.json();
@@ -164,7 +165,8 @@ const loadFromSheets = async (currentInvData, currentTransfers) => {
     });
     // For transfers: if Sheets returned data, use Sheets; otherwise keep localStorage
     const mergedTrans = sheetsTrans.length > 0 ? sheetsTrans : (currentTransfers || []);
-    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, achatsData: achatsFromSheets, jourData: jourRows || [], ok: true};
+    const variationsJson = await variationsResp.json().catch(()=>({rows:[]}));
+    return {invData: mergedInv, transfers: mergedTrans, zeltyData: zeltyResult.data, zeltyOk: zeltyResult.ok, achatsData: achatsFromSheets, jourData: jourRows || [], variationsData: variationsJson.rows || [], ok: true};
   } catch(e) {
     console.warn("loadFromSheets failed, using localStorage only:", e);
     return {invData: currentInvData, transfers: currentTransfers, zeltyData: {}, zeltyOk: false, achatsData: null, jourData: [], ok: false};
@@ -363,6 +365,7 @@ function ValBtn({isVal, onValidate, onUnvalidate}) {
 // ════════════════════════════════════════════════════════════════════════════
 function App() {
   const [achats,    setAchats]    = useState(INIT_ACHATS);
+  const [prixVariations, setPrixVariations] = useState([]);
   const [params,    setParams]    = useState(DEFAULT_PARAMS);
   const [invData,   setInvData]   = useState({});
   const [ctrlData,  setCtrlData]  = useState({});
@@ -441,6 +444,10 @@ function App() {
       if (result.achatsData) {
         setAchats(result.achatsData);
         persist(SK.achats, result.achatsData);
+      }
+      // Charger variations de prix depuis Sheets
+      if (result.variationsData && result.variationsData.length > 0) {
+        setPrixVariations(result.variationsData);
       }
       // Charger inventaire journalier
       if (result.jourData) {
@@ -1338,7 +1345,23 @@ function App() {
   // PRIX VIEW
   // ════════════════════════════════════════════════════════════════════════════
   const renderPrix=()=>{
-    const PRIX_TEST = {
+    // Construire PRIX_TEST depuis Sheets (prixVariations) + fallback hardcodé si vide
+    const buildPrixFromSheets = () => {
+      if (!prixVariations || prixVariations.length === 0) return null;
+      const result = {};
+      // Regrouper par article
+      prixVariations.forEach(row => {
+        const art = row.article;
+        if (!result[art]) result[art] = [];
+        // Chercher si le mois existe déjà
+        const existing = result[art].find(r => r.mois === row.mois);
+        if (!existing) result[art].push({mois: row.mois, prix: row.nouveau_prix, fournisseur: row.fournisseur});
+      });
+      return result;
+    };
+
+    const sheetsData = buildPrixFromSheets();
+    const PRIX_TEST = sheetsData || {
       "Saumon": [
         {mois:"Janvier 2026", prix:14.90, fournisseur:"J\'Océane"},
         {mois:"Février 2026", prix:15.20, fournisseur:"J\'Océane"},
