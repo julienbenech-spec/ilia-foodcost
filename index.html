@@ -1274,10 +1274,10 @@ function App() {
         <div>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><span style={{fontSize:11,color:"#888"}}>{ings.length} références</span><span style={{fontSize:12,fontWeight:700,color:c.accent}}>{fmt(total)}</span></div>
           <div style={{background:c.bg,borderRadius:8,padding:"10px 12px",marginBottom:12}}>
-            <div style={{fontSize:10,fontWeight:600,color:c.text,textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Top 5 — {pct(ings.slice(0,5).reduce((s,[,v])=>s+v.montant,0),total)} du total</div>
-            {ings.slice(0,5).map(([ing,{montant:amt,qty,unit}],i)=>(
-              <div key={ing} style={{display:"flex",justifyContent:"space-between",fontSize:11,padding:"4px 0",borderBottom:i<4?`1px solid ${c.light}`:"none",alignItems:"center"}}>
-                <span style={{color:c.text}}>{["🥇","🥈","🥉","4️⃣","5️⃣"][i]} {ing}</span>
+            <div style={{fontSize:10,fontWeight:600,color:c.text,textTransform:"uppercase",letterSpacing:".06em",marginBottom:6}}>Top 10 — {pct(ings.slice(0,10).reduce((s,[,v])=>s+v.montant,0),total)} du total</div>
+            {ings.slice(0,10).map(([ing,{montant:amt,qty,unit}],i)=>(
+              <div key={ing} style={{display:"flex",justifyContent:"space-between",fontSize:11,padding:"4px 0",borderBottom:i<9?`1px solid ${c.light}`:"none",alignItems:"center"}}>
+                <span style={{color:c.text}}>{["🥇","🥈","🥉","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"][i]} {ing}</span>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
                   {qty>0&&<span style={{fontSize:10,color:c.text,background:c.light,padding:"1px 6px",borderRadius:4}}>{qty} {unit}</span>}
                   <span style={{fontWeight:700,color:c.accent}}>{fmt(amt)}</span>
@@ -1285,12 +1285,26 @@ function App() {
               </div>
             ))}
           </div>
-          <div style={{overflowX:"auto"}}>
-            <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
-              <thead><tr style={{borderBottom:"2px solid #f0f0ee"}}>{["#","Ingrédient","Qté","Unité","Prix unit.","Montant HT","%",""].map((h,i)=><th key={i} style={{padding:"5px 8px",color:"#888",fontWeight:600,fontSize:10,textAlign:i>=4?"right":i===2?"center":"left"}}>{h}</th>)}</tr></thead>
-              <tbody>
-                {ings.map(([ing,{montant:amt,qty,unit}],i)=>{ const w=total>0?Math.min((amt/total)*100,100):0; const prixU=qty>0?amt/qty:0; return(
-                  <tr key={ing} style={{borderBottom:"1px solid #f8f8f6",background:i<5?"#fffbeb":"transparent"}}>
+          <AchatsDetail ings={ings} total={total} c={c} fmt={fmt} pct={pct}/>
+        </div>
+      )}
+    </div>);
+  };
+
+  function AchatsDetail({ings, total, c, fmt, pct}) {
+    const [open, setOpen] = React.useState(false);
+    return (
+      <div>
+        <button onClick={()=>setOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:6,width:"100%",background:"none",border:"1px solid #e0e0e0",borderRadius:8,padding:"8px 12px",cursor:"pointer",fontSize:11,color:"#666",fontWeight:600,marginBottom:open?8:0}}>
+          <span>{open?"▲":"▼"}</span>
+          <span>{open?"Masquer le détail":"Voir tous les ingrédients"} ({ings.length})</span>
+        </button>
+        {open&&<div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <thead><tr style={{borderBottom:"2px solid #f0f0ee"}}>{["#","Ingrédient","Qté","Unité","Prix unit.","Montant HT","%",""].map((h,i)=><th key={i} style={{padding:"5px 8px",color:"#888",fontWeight:600,fontSize:10,textAlign:i>=4?"right":i===2?"center":"left"}}>{h}</th>)}</tr></thead>
+            <tbody>
+              {ings.map(([ing,{montant:amt,qty,unit}],i)=>{ const w=total>0?Math.min((amt/total)*100,100):0; const prixU=qty>0?amt/qty:0; return(
+                <tr key={ing} style={{borderBottom:"1px solid #f8f8f6",background:i<10?"#fffbeb":"transparent"}}>
                     <td style={{padding:"5px 8px",color:"#ccc",fontSize:10}}>{i+1}</td>
                     <td style={{padding:"5px 8px",fontWeight:i<3?600:400}}>{ing}</td>
                     <td style={{padding:"5px 8px",textAlign:"center",fontWeight:600,color:c.accent}}>{qty>0?qty:"—"}</td>
@@ -1303,9 +1317,10 @@ function App() {
               </tbody>
               <tfoot><tr style={{borderTop:"2px solid #e0e0e0",background:"#f8f8f6"}}><td colSpan={5} style={{padding:"6px 8px",fontWeight:700,fontSize:11}}>TOTAL</td><td style={{padding:"6px 8px",textAlign:"right",fontWeight:700,color:c.accent,fontSize:12}}>{fmt(total)}</td><td colSpan={2}/></tr></tfoot>
             </table>
-          </div>
-        </div>
-      )}
+          </div>}
+      </div>
+    );
+  }
       {achatsView==="restaurants"&&(rests.length===0?<div style={{textAlign:"center",padding:"32px 0",color:"#bbb"}}>Aucune donnée</div>:
         <div>{rests.map(([r,amt],i)=>(
           <div key={r} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderBottom:"1px solid #f0f0ee"}}>
