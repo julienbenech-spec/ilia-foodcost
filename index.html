@@ -1255,7 +1255,7 @@ function App() {
         </div>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-        {[["Total",fmtK(globalTotal),(moisFilter==="Tous"?`${MOIS.length} mois`:moisFilter)+(restoFilter!=="Tous"?` · ${restoFilter}`:""),"#111"],...FOURNISSEURS.map(f=>{ const{total:t}=rowsFor(f); return[f,fmtK(t),t>0?pct(t,globalTotal)+" du total":"—",t>0?COLORS[f]?.accent||"#555":"#bbb"]; }).filter(([,, ,accent])=>accent!=="#bbb")].map(([lbl,val,sub,accent])=>(
+        {[["Total",fmtK(globalTotal),(moisFilter==="Tous"?`${MOIS.length} mois`:moisFilter)+(restoFilter!=="Tous"?` · ${restoFilter}`:""),"#111"]].map(([lbl,val,sub,accent])=>(
           <div key={lbl} style={{background:"#f8f8f6",borderRadius:8,padding:"10px 14px",flex:1,minWidth:100}}>
             <div style={{fontSize:9,color:"#888",fontWeight:600,textTransform:"uppercase",letterSpacing:".05em",marginBottom:2}}>{lbl}</div>
             <div style={{fontSize:15,fontWeight:700,color:accent}}>{val}</div>
