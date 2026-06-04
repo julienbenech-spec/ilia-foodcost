@@ -179,7 +179,24 @@ const loadFromSheets = async (currentInvData, currentTransfers) => {
 const RESTAURANTS = ["Washington","Mathurins","Casanova","Vernier","Riviere"];
 const FOURNISSEURS = ["Cercle Vert","Halles Prestige","Chirag","Sablière","J'Océane","Prod'Orient","Brand Décision","Yarden","Prevogel","La Crèmerie"];
 const MOIS = ["Janvier 2026","Février 2026","Mars 2026","Avril 2026","Mai 2026"];
-const WEEKS = ["S09","S10","S11","S12","S13","S14","S15","S16","S17","S18"];
+const getCurrentWeek = () => {
+  const now = new Date();
+  const jan4 = new Date(now.getFullYear(), 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const diff = now - startOfWeek1;
+  const week = Math.floor(diff / (7 * 24 * 3600 * 1000)) + 1;
+  return `S${week}`;
+};
+const generateWeeks = () => {
+  const current = parseInt(getCurrentWeek().replace("S",""), 10);
+  const weeks = [];
+  for (let i = current - 12; i <= current + 4; i++) {
+    if (i > 0 && i <= 53) weeks.push(`S${i}`);
+  }
+  return weeks;
+};
+const WEEKS = generateWeeks();
 const RC = ["#6366f1","#0891b2","#059669","#d97706","#dc2626"];
 const COLORS = {
   "Cercle Vert":    {bg:"#e8f5e9",accent:"#2e7d32",light:"#c8e6c9",text:"#1b5e20"},
@@ -401,11 +418,11 @@ function App() {
   const [restoFilter, setRestoFilter] = useState("Tous");
   const [form,       setForm]       = useState({fournisseur:"Cercle Vert",restaurant:"Washington",mois:"Janvier 2026",ingredient:"",montant:"",qty:"",unit:""});
   // Contrôle UI
-  const [ctrlSem,   setCtrlSem]  = useState("S13");
+  const [ctrlSem,   setCtrlSem]  = useState(getCurrentWeek);
   const [ctrlRest,  setCtrlRest] = useState("Washington");
   const [ctrlView,  setCtrlView] = useState("detail");
   // Inventaire UI
-  const [invSem,    setInvSem]   = useState("S13");
+  const [invSem,    setInvSem]   = useState(getCurrentWeek);
   const [invRest,   setInvRest]  = useState("Washington");
   // Transfert form (hoisted here so InventaireView stays hook-free)
   const [transForm, setTransForm] = useState({to:RESTAURANTS[1],prot:DEFAULT_PARAMS.proteines[0]?.name||"",etat:"",poids_brut:"",tare:"",note:""});
