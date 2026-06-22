@@ -7,6 +7,11 @@
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+Babel.registerPreset('react-classic', {
+  presets: [[Babel.availablePresets.react, {runtime: 'classic'}]]
+});
+</script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, -apple-system, sans-serif; background: #fff; }
@@ -14,7 +19,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #fff; }
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel">
+<script type="text/babel" data-presets="react-classic">
 const { useState, useEffect, useCallback } = React;
 
 
@@ -93,10 +98,20 @@ const syncToSheets = (payload) => {
   }
 };
 
+const normalizeRestaurantName = (name) => {
+  if (!name) return name;
+  const aliases = {
+    "Rivière": "Riviere",
+    "Riviere": "Riviere",
+  };
+  return aliases[name] || name;
+};
+
 const sheetsRowsToInvData = (rows) => {
   const invData = {};
   rows.forEach(row => {
-    const key = `inv${row.type}__${row.restaurant}__${row.semaine}`;
+    const restaurant = normalizeRestaurantName(row.restaurant);
+    const key = `inv${row.type}__${restaurant}__${row.semaine}`;
     if (!invData[key]) invData[key] = {};
     if (!invData[key][row.proteine]) invData[key][row.proteine] = {lines: []};
     if (row.etat || row.poids_brut) {
@@ -112,7 +127,9 @@ const sheetsRowsToInvData = (rows) => {
 
 const sheetsRowsToTransfers = (rows) => rows.map((row, i) => ({
   id: row.timestamp ? new Date(row.timestamp).getTime() : Date.now() + i,
-  from: row.from, to: row.to, sem: row.semaine, prot: row.prot,
+  from: normalizeRestaurantName(row.from),
+  to: normalizeRestaurantName(row.to),
+  sem: row.semaine, prot: row.prot,
   etat: row.etat, poids_brut: parseFloat(row.poids_brut) || 0,
   tare: parseFloat(row.tare) || 0, qty_net: parseFloat(row.qty_net) || 0,
   note: row.note || "", date: row.date || ""
@@ -126,7 +143,7 @@ const loadZeltyFromSheets = async () => {
     if (rows.length === 0) return { data: {}, ok: false };
     const data = {};
     rows.forEach(row => {
-      const resto = row.restaurant;
+      const resto = normalizeRestaurantName(row.restaurant);
       const sem = row.semaine;
       const prot = row.proteine;
       if (!data[resto]) data[resto] = {};
@@ -165,7 +182,8 @@ const loadAchatsFromSheets = async () => {
     json.rows.forEach(row => {
       // Normaliser le mois : "janvier 2026" → "Janvier 2026"
       const moisNorm = row.mois ? row.mois.replace(/^(\w)/, c => c.toUpperCase()) : row.mois;
-      const key = `${row.fournisseur}__${row.restaurant}__${moisNorm}`;
+      const restaurant = normalizeRestaurantName(row.restaurant);
+      const key = `${row.fournisseur}__${restaurant}__${moisNorm}`;
       if (!achats[key]) achats[key] = [];
       achats[key].push({
         ingredient: row.article,
@@ -472,6 +490,11 @@ function App() {
   const [invMobileSection, setInvMobileSection] = useState("debut"); // debut | fin | transfert
   const [invMobileProtIdx, setInvMobileProtIdx] = useState(0);
 
+  const persist=useCallback(async(key,val)=>{
+    try{ await window.storage.set(key,JSON.stringify(val)); setSaved(true); setTimeout(()=>setSaved(false),1500); }
+    catch(e){ console.error("Storage error:",e); }
+  },[]);
+
   // ── Sync from Sheets (callable manually) ──
   const syncFromSheets = useCallback(async (currentInvData, currentTransfers) => {
     setSyncStatus("loading");
@@ -528,7 +551,7 @@ function App() {
       }
       // Charger inventaire journalier
       if (result.jourData) {
-        setJourData(result.jourData);
+        setJourData(result.jourData.map(row => ({...row, restaurant: normalizeRestaurantName(row.restaurant)})));
       }
       try {
         setZeltyRefresh(await getZeltyRefreshStatus());
@@ -601,7 +624,7 @@ function App() {
         }
         // Charger inventaire journalier
         if (result.jourData) {
-          setJourData(result.jourData);
+          setJourData(result.jourData.map(row => ({...row, restaurant: normalizeRestaurantName(row.restaurant)})));
         }
         setSyncStatus("ok");
         setTimeout(() => setSyncStatus("idle"), 3000);
@@ -639,11 +662,6 @@ function App() {
       return updated;
     });
   },[isLoaded]);
-
-  const persist=useCallback(async(key,val)=>{
-    try{ await window.storage.set(key,JSON.stringify(val)); setSaved(true); setTimeout(()=>setSaved(false),1500); }
-    catch(e){ console.error("Storage error:",e); }
-  },[]);
 
   const saveAchats   =d=>{ setAchats(d);    persist(SK.achats,d); };
   const saveParams   =d=>{ setParams(d);    persist(SK.params,d); };
@@ -1113,9 +1131,9 @@ function App() {
                   const col = ecartColor(ecart);
                   return (
                     <tr key={i} style={{borderBottom:"1px solid #f0f0f0",background:i%2===0?"#fff":"#fafafa"}}>
-                      <td style={{padding:"7px 10px",whiteSpace:"nowrap"}}>{(row.date||"").slice(0,10)}</td>
-                      <td style={{padding:"7px 10px"}}>{row.service||"—"}</td>
-                      <td style={{padding:"7px 10px",fontWeight:600}}>{row.proteine||"—"}</td>
+                    <td style={{padding:"7px 10px",whiteSpace:"nowrap"}}>{(row.date||"").slice(0,10)}</td>
+                    <td style={{padding:"7px 10px"}}>{row.service||"—"}</td>
+                    <td style={{padding:"7px 10px",fontWeight:600}}>{row.proteine||"—"}</td>
                       <td style={{padding:"7px 10px",color:"#666"}}>{row.etat||"—"}</td>
                       <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_debut!=null?parseFloat(String(row.stock_debut).replace(",",".")).toFixed(3):"—"}</td>
                       <td style={{padding:"7px 10px",textAlign:"right"}}>{row.stock_fin!=null?parseFloat(String(row.stock_fin).replace(",",".")).toFixed(3):"—"}</td>
